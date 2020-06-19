@@ -1,0 +1,3 @@
+https://serverfault.com/questions/58363/my-unqualified-host-name-foo-bar-unknown-problem
+https://www.ostechnix.com/how-to-enable-ssh-on-freebsd/
+https://www.tecmint.com/things-to-do-after-installing-freebsd/

@@ -18,7 +18,7 @@ vtp(struct thread *td, void *args) {
         long word=0;
         __asm__ __volatile__ (
                 "mov %%cr3, %%rax;"
-                "mov %%rax, $0;"
+                "mov %%rax, %0;"
                 //"mov %2, %%rdx;"
                 "mov %%cr0, %%rbx;"
                 "btr $31, %%ebx;"

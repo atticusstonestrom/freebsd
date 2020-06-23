@@ -26,7 +26,7 @@ vtp(struct thread *td, void *args) {
                 "mov (%%rax), %%rdx;"
                 "btc $31, %%ebx;"
                 "mov %%rbx, %%cr0;"
-                "mov %%rdx, $1"
+                "mov %%rdx, %1"
                 : "=r"(cr3), "=r"(word)
                 : /*"r"(vaddr)*/
                 : "rax", "rdx", "rbx");

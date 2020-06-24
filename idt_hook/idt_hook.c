@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////
-//most relevant information can be found in chapter //
-//4 of volume 3A of the intel developers' manual,   //
-//which starts at pg 2910                           //
+//                                                  //
+//                                                  //
+//                                                  //
 //////////////////////////////////////////////////////
 
 #include <sys/types.h>

@@ -76,7 +76,7 @@ vtp(struct thread *td, void *args) {
 	////////////////////////////////////////////////////////////////////
 	unsigned long psentry=0, paddr=0;
 	////////////////////////////////////////////////////////////////////
-	//pml5e
+	//pml5e (if applicable)
 	if(la57_flag) {			//5-level paging
 		psentry=*(unsigned long *)\
 			PHYS_TO_VIRT( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>51) );

@@ -8,7 +8,6 @@
 int main() {
 	int x=0;
 	unsigned long vaddr=(unsigned long)&x;
-	printf("[debug] virtual address: %p\n", (void *)vaddr);
 	unsigned long paddr=0;
 
 	int syscall_num;

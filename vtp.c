@@ -79,26 +79,28 @@ vtp(struct thread *td, void *args) {
 	////////////////////////////////////////////////////////////////////
 	//pml5e (if applicable)
 	if(la57_flag) {			//5-level paging
+		printf("[debug]: &pml5e:\t0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) ));
 		psentry=*(unsigned long *)\
-			PHYS_TO_VIRT( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>51) );
-			if(!PE_P_FLAG(psentry)) {
-				return EFAULT; }}
+			PHYS_TO_VIRT( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) );
+		printf("[debug]: pml5e:\t\t0x%lx\n", psentry);
+		if(!PE_P_FLAG(psentry)) {
+			return EFAULT; }}
 	else {
 		psentry=cr3; }
 	////////////////////////////////////////////////////////////////////
 	//pml4e
-	uprintf("[debug]: cr3:    0x%lx\n", psentry);
-	uprintf("[debug]: &pml4e: 0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>42) ));
+	uprintf("[debug]: &pml4e:\t0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) ));
 	psentry=*(unsigned long *)\
-		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>42) );
-	uprintf("[debug]: pml4e:  0x%lx\n", psentry);
+		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) );
+	uprintf("[debug]: pml4e:\t\t0x%lx\n", psentry);
 	if(!PE_P_FLAG(psentry)) {
 		return EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pdpte
+	uprintf("[debug]: &pdpte:\t0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) ));
 	psentry=*(unsigned long *)\
-		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>33) );
-	uprintf("[debug]: pdpte:  0x%lx\n", psentry);
+		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) );
+	uprintf("[debug]: pdpte:\t\t0x%lx\n", psentry);
 	if(PE_PS_FLAG(psentry)) {	//1GB page
 		//bits (51 to 30) | bits (29 to 0)
 		paddr=(psentry&0x0ffffc00000000)|(vaddr&0x3fffffff);
@@ -107,9 +109,10 @@ vtp(struct thread *td, void *args) {
 		return EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pde
+	uprintf("[debug]: &pde:\t\t0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) ));
 	psentry=*(unsigned long *)\
-		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>24) );
-	uprintf("[debug]: pde:    0x%lx\n", psentry);
+		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) );
+	uprintf("[debug]: pde:\t\t0x%lx\n", psentry);
 	if(PE_PS_FLAG(psentry)) {	//2MB page
 		//bits (51 to 21) | bits (20 to 0)
 		paddr=(psentry&0x0ffffffffe0000)|(vaddr&0x1ffff);
@@ -118,9 +121,10 @@ vtp(struct thread *td, void *args) {
 		return EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pte
+	uprintf("[debug]: &pte:\t\t0x%lx\n", PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) ));
 	psentry=*(unsigned long *)\
-		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>15) );
-	uprintf("[debug]: pte:    0x%lx\n", psentry);
+		PHYS_TO_VIRT( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) );
+	uprintf("[debug]: pte:\t\t0x%lx\n", psentry);
 	paddr=(psentry&0x0ffffffffff000)|(vaddr&0xfff);
 	return copyout(&paddr, to_fill, sizeof(unsigned long)); }
 	////////////////////////////////////////////////////////////////////

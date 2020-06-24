@@ -17,6 +17,7 @@ struct vtp_args {
 
 /////////////////////////////////////////////////////
 //virtual address masks
+//pg 2910 of intel developers' manual
 #define PML5_MASK(x)	((x)&0x01ff000000000000)	//bits 56 to 48
 #define PML4_MASK(x)	((x)&0x0000ff8000000000)	//bits 47 to 39
 #define PDPT_MASK(x)	((x)&0x0000007fc0000000)	//bits 38 to 30

@@ -5,12 +5,9 @@
 #include <sys/types.h>
 #include <sys/module.h>
 
-int main(int argc, char **argv) {
-	unsigned long vaddr;
-	if(argc!=2) {
-		printf("usage:\t%s <virtual address to resolve>\n", argv[0]);
-		exit(0); }
-	vaddr=strtoul(argv[1], NULL, 16);
+int main() {
+	int x=0;
+	unsigned long vaddr=(unsigned long)&x;
 	unsigned long paddr=0;
 
 	int syscall_num;

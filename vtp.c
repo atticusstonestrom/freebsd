@@ -33,7 +33,7 @@ struct vtp_args {
 
 /////////////////////////////////////////////////////
 #define	DMAP_MIN_ADDRESS	(0xfffff80000000000)
-#define PHYS_TO_VIRT(x) ((x)|DMAP_MIN_ADDRESS)
+#define PHYS_TO_VIRT(x) 	((x)|DMAP_MIN_ADDRESS)
 /////////////////////////////////////////////////////
 
 static int

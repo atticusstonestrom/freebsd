@@ -14,6 +14,18 @@
 #include <sys/sysproto.h>
 #include <sys/systm.h>
 
+
+#define BP_INT 0x03
+#define IDT_ENTRY_SIZE 8
+struct idt_entry {
+	unsigned long val1;
+	unsigned long val2; };
+struct idtr_t {
+	unsigned short lim_val;
+	unsigned long addr; }
+	__attribute__((packed))
+	idtr;
+
 static int
 mkdir_hook(struct thread *td, void *args) {
 	//struct mkdir_args {
@@ -27,38 +39,20 @@ mkdir_hook(struct thread *td, void *args) {
 		return error; }
 	uprintf("the directory \"%s\" will be created with the following permissions: %o\n",
 		path, uap->mode);
-	return sys_mkdir(td, args); }
-	////////////////////////////////////////////////////////////////////
-	//asm block checks to see if 4 or 5-level paging is enabled
-	//if so, moves the cr3 register into the cr3 variable
-	//and sets la57_flag to assert whether 4-level or 5-level
-	/*int la57_flag=0;
-	unsigned long cr3=0;
-	__asm__ __volatile__ (
-		"mov %%cr0, %%rax;"		//check bit 31 of cr0 (PG flag)
-		"test $0x80000000, %%eax;"	//deny request if 0
-		"jz fail;"			//(ie if paging is not enabled)
 
-		"mov $0xc0000080, %%ecx;"	//check bit 8 of ia32_efer (LME flag)
-		"rdmsr;"			//deny request if 0
-		"test $0x100, %%eax;"		//(module currently can't handle pae paging)
-		"jz fail;"
-		
-	"success:\n"
-		"mov %%cr3, %0;"
-		"mov %%cr4, %%rax;"
-		"shr $20, %%rax;"
-		"and $1, %%rax;"
-		"mov %%eax, %1;"
-		"jmp break;"
-	"fail:\n"
-		"mov $0, %0;"
-	"break:\n"
+	__asm__ __volatile__ (
+		"sidt idtr;"
+		: //"=r"(idtr)
+		:: "memory");
+	uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
+	struct idt_entry idte;
+	for(int i=0; i<=20; i++) {
+		memcpy(&idte, (void *)(idtr.addr+i*sizeof(struct idt_entry)), sizeof(struct idt_entry));
+		uprintf("idt entry %d:\t0x%lx%016lx\n",
+			i, idte.val2, idte.val1); }
 	
-		: "=r"(cr3), "=r"(la57_flag)
-		::"rax", "ecx", "memory");
-	if(!cr3) {
-		return EOPNOTSUPP; }}*/
+	return sys_mkdir(td, args); }
+
 
 static int
 load(struct module *module, int cmd, void *arg) {

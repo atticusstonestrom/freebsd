@@ -27,7 +27,7 @@ mkdir_hook(struct thread *td, void *args) {
 		return error; }
 	uprintf("the directory \"%s\" will be created with the following permissions: %o\n",
 		path, uap->mode);
-	return mkdir(td, args); }
+	return sys_mkdir(td, args); }
 	////////////////////////////////////////////////////////////////////
 	//asm block checks to see if 4 or 5-level paging is enabled
 	//if so, moves the cr3 register into the cr3 variable
@@ -66,9 +66,12 @@ load(struct module *module, int cmd, void *arg) {
 	switch(cmd) {
 		case MOD_LOAD:
 			sysent[SYS_mkdir].sy_call=(sy_call_t *)mkdir_hook;
+			uprintf("sysent[] @\t%p\n", &sysent);
+			uprintf("mkdir @\t\t%p\n", sys_mkdir);
+			uprintf("mkdir_hook @\t%p\n", mkdir_hook);
 			break;
 		case MOD_UNLOAD:
-			sysent[SYS_mkdir].sy_call=(sy_call_t *)mkdir;
+			sysent[SYS_mkdir].sy_call=(sy_call_t *)sys_mkdir;
 			break;
 		default:
 			error=EOPNOTSUPP;

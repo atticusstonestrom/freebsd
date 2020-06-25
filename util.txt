@@ -1,0 +1,1 @@
+gdb -batch -ex 'file ./sc' -ex 'disassemble shellcode' > sc.txt

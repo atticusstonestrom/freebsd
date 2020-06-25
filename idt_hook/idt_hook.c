@@ -20,7 +20,7 @@
 struct idte_t {
 	unsigned short offset_0_15;
 	unsigned short segment_selector;
-	unsigned char ist;
+	unsigned char ist;	//look up interrupt stack table; if 0, field is unused
 	unsigned char type:4;
 	unsigned char zero_12:1;
 	unsigned char dpl:2;

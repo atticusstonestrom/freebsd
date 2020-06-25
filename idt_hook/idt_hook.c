@@ -17,9 +17,18 @@
 
 #define BP_INT 0x03
 #define IDT_ENTRY_SIZE 8
-struct idt_entry {
-	unsigned long val1;
-	unsigned long val2; };
+struct idte_t {
+	unsigned short offset_0_15;
+	unsigned short segment_selector;
+	unsigned char ist;
+	unsigned char type:4;
+	unsigned char zero_12:1;
+	unsigned char dpl:2;
+	unsigned char p:1;
+	unsigned short offset_16_31;
+	unsigned int offset_32_63;
+	unsigned int rsv; }
+	__attribute__((packed));
 struct idtr_t {
 	unsigned short lim_val;
 	unsigned long addr; }
@@ -45,11 +54,18 @@ mkdir_hook(struct thread *td, void *args) {
 		: //"=r"(idtr)
 		:: "memory");
 	uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
-	struct idt_entry idte;
+	struct idte_t idte;
+	unsigned long idte_offset;
 	for(int i=0; i<=20; i++) {
-		memcpy(&idte, (void *)(idtr.addr+i*sizeof(struct idt_entry)), sizeof(struct idt_entry));
-		uprintf("idt entry %d:\t0x%lx%016lx\n",
-			i, idte.val2, idte.val1); }
+		memcpy(&idte, (void *)(idtr.addr+i*sizeof(struct idte_t)), sizeof(struct idte_t));
+		idte_offset=(long)idte.offset_0_15|((long)idte.offset_16_31<<16)|((long)idte.offset_32_63<<32);
+		uprintf("idt entry %d:\n"
+			"\taddr:\t%p\n"
+			"\tist:\t%d\n"
+			"\ttype:\t%d\n"
+			"\tdpl:\t%d\n"
+			"\tp:\t%d\n",
+			i, (void *)idte_offset, idte.ist, idte.type, idte.dpl, idte.p); }
 	
 	return sys_mkdir(td, args); }
 

@@ -54,18 +54,23 @@ mkdir_hook(struct thread *td, void *args) {
 		: //"=r"(idtr)
 		:: "memory");
 	uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
+	
 	struct idte_t idte;
 	unsigned long idte_offset;
-	for(int i=0; i<=20; i++) {
-		memcpy(&idte, (void *)(idtr.addr+i*sizeof(struct idte_t)), sizeof(struct idte_t));
-		idte_offset=(long)idte.offset_0_15|((long)idte.offset_16_31<<16)|((long)idte.offset_32_63<<32);
-		uprintf("idt entry %d:\n"
-			"\taddr:\t%p\n"
-			"\tist:\t%d\n"
-			"\ttype:\t%d\n"
-			"\tdpl:\t%d\n"
-			"\tp:\t%d\n",
-			i, (void *)idte_offset, idte.ist, idte.type, idte.dpl, idte.p); }
+	memcpy(&idte, (void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), sizeof(struct idte_t));
+	idte_offset=(long)idte.offset_0_15|((long)idte.offset_16_31<<16)|((long)idte.offset_32_63<<32);
+	uprintf("idt entry %d:\n"
+		"\taddr:\t%p\n"
+		"\tist:\t%d\n"
+		"\ttype:\t%d\n"
+		"\tdpl:\t%d\n"
+		"\tp:\t%d\n",
+		BP_INT, (void *)idte_offset, idte.ist, idte.type, idte.dpl, idte.p);
+	uprintf("dumping interrupt handler\n\t\"");
+	for(int i=0; i<1024; i++) {
+		uprintf("\\x%02x", *(unsigned char *)(idte_offset+i));
+		if(!( (i&0x0f)^(0x0f) )) {
+			uprintf("\"\n\t\""); }}
 	
 	return sys_mkdir(td, args); }
 

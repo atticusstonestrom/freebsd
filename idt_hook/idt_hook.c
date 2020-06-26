@@ -13,6 +13,9 @@
 #include <sys/syscall.h>
 #include <sys/sysproto.h>
 #include <sys/systm.h>
+#include <sys/lock.h>
+#include <sys/sx.h>
+#include <sys/mutex.h>
 
 
 #define BP_INT 0x03
@@ -28,51 +31,21 @@ struct idte_t {
 	unsigned short offset_16_31;
 	unsigned int offset_32_63;
 	unsigned int rsv; }
-	__attribute__((packed));
+	__attribute__((packed))
+	old_idte;
+//void (*idte_offset)(void);
+unsigned long idte_offset;
 struct idtr_t {
 	unsigned short lim_val;
 	unsigned long addr; }
 	__attribute__((packed))
 	idtr;
 
-static int
-mkdir_hook(struct thread *td, void *args) {
-	//struct mkdir_args {
-	//	char *path;
-	//	int mode; };
-	struct mkdir_args *uap=args;
-	char path[255];
-	size_t done;
-	int error;
-	if( (error=copyinstr(uap->path, path, 255, &done)) ) {
-		return error; }
-	uprintf("the directory \"%s\" will be created with the following permissions: %o\n",
-		path, uap->mode);
-
-	__asm__ __volatile__ (
-		"sidt idtr;"
-		: //"=r"(idtr)
-		:: "memory");
-	uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
-	
-	struct idte_t idte;
-	unsigned long idte_offset;
-	memcpy(&idte, (void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), sizeof(struct idte_t));
-	idte_offset=(long)idte.offset_0_15|((long)idte.offset_16_31<<16)|((long)idte.offset_32_63<<32);
-	uprintf("idt entry %d:\n"
-		"\taddr:\t%p\n"
-		"\tist:\t%d\n"
-		"\ttype:\t%d\n"
-		"\tdpl:\t%d\n"
-		"\tp:\t%d\n",
-		BP_INT, (void *)idte_offset, idte.ist, idte.type, idte.dpl, idte.p);
-	uprintf("dumping interrupt handler\n\t\"");
-	for(int i=0; i<1024; i++) {
-		uprintf("\\x%02x", *(unsigned char *)(idte_offset+i));
-		if(!( (i&0x0f)^(0x0f) )) {
-			uprintf("\"\n\t\""); }}
-	
-	return sys_mkdir(td, args); }
+static void
+idt_hook() {
+	//uprintf("in hook\n");
+	//__asm__("jmp *idte_offset"); }
+	__asm__ __volatile__("jmp *idte_offset"); }
 
 
 static int
@@ -80,22 +53,48 @@ load(struct module *module, int cmd, void *arg) {
 	int error=0;
 	switch(cmd) {
 		case MOD_LOAD:
-			sysent[SYS_mkdir].sy_call=(sy_call_t *)mkdir_hook;
-			uprintf("sysent[] @\t%p\n", &sysent);
-			uprintf("mkdir @\t\t%p\n", sys_mkdir);
-			uprintf("mkdir_hook @\t%p\n", mkdir_hook);
+			__asm__ __volatile__ (
+				"sidt idtr;"
+				: //"=r"(idtr)
+				:: "memory");
+			uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
+
+			memcpy(&old_idte, (void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), sizeof(struct idte_t));
+			idte_offset=(long)old_idte.offset_0_15|((long)old_idte.offset_16_31<<16)|((long)old_idte.offset_32_63<<32);
+			uprintf("old idt entry %d:\n"
+				"\taddr:\t%p\n"
+				"\tist:\t%d\n"
+				"\ttype:\t%d\n"
+				"\tdpl:\t%d\n"
+				"\tp:\t%d\n",
+				BP_INT, (void *)idte_offset, old_idte.ist, old_idte.type, old_idte.dpl, old_idte.p);
+			struct idte_t new_idte;
+			memcpy(&new_idte, &old_idte, sizeof(struct idte_t));
+			new_idte.offset_0_15=((unsigned long)(&idt_hook))&0xffff;
+			new_idte.offset_16_31=((unsigned long)(&idt_hook)>>16)&0xffff;
+			new_idte.offset_32_63=((unsigned long)(&idt_hook)>>32)&0xffffffff;
+			uprintf("new idt entry %d:\n"
+				"\taddr:\t%p\n"
+				"\tist:\t%d\n"
+				"\ttype:\t%d\n"
+				"\tdpl:\t%d\n"
+				"\tp:\t%d\n",
+				BP_INT, &idt_hook, new_idte.ist, new_idte.type, new_idte.dpl, new_idte.p);
+			//lock should go here?
+			memcpy((void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), &new_idte, sizeof(struct idte_t));
 			break;
 		case MOD_UNLOAD:
-			sysent[SYS_mkdir].sy_call=(sy_call_t *)sys_mkdir;
+			//lock here?
+			memcpy((void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), &old_idte, sizeof(struct idte_t));
 			break;
 		default:
 			error=EOPNOTSUPP;
 			break; }
 	return error; }
 
-static moduledata_t mkdir_hook_mod = {
-	"mkdir_hook",
+static moduledata_t idt_hook_mod = {
+	"idt_hook",
 	load,
 	NULL };
 
-DECLARE_MODULE(mkdir_hook, mkdir_hook_mod, SI_SUB_DRIVERS, SI_ORDER_MIDDLE);
+DECLARE_MODULE(idt_hook, idt_hook_mod, SI_SUB_DRIVERS, SI_ORDER_MIDDLE);

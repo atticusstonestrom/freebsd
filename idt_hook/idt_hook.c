@@ -45,6 +45,9 @@ static void
 idt_hook() {
 	//uprintf("in hook\n");
 	//(*(void (*)(void))idte_offset)();
+	*(int *)0xffffffff81080d70=0xdeadbeef;
+	*(int *)idte_offset=0xdeadbeef;
+	*(int *)idtr.addr=0xdeadbeef;
 	__asm__ __volatile__("jmp *idte_offset"); }
 	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }
 

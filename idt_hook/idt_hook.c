@@ -44,8 +44,9 @@ struct idtr_t {
 static void
 idt_hook() {
 	//uprintf("in hook\n");
-	//__asm__("jmp *idte_offset"); }
+	//(*(void (*)(void))idte_offset)();
 	__asm__ __volatile__("jmp *idte_offset"); }
+	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }
 
 
 static int

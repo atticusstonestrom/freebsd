@@ -43,6 +43,7 @@ struct idtr_t {
 
 static void
 idt_hook() {
+	/*uprintf("in hook\n");
 	uprintf("in hook\n");
 	uprintf("in hook\n");
 	uprintf("in hook\n");
@@ -53,11 +54,12 @@ idt_hook() {
 	uprintf("in hook\n");
 	uprintf("in hook\n");
 	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
+	uprintf("in hook\n");*/
 	__asm__ __volatile__(
 		"pop %rbp;"
-		"jmp *idte_offset;"
+		//"jmp *idte_offset;"
+		"mov $0xffffffff81080d70, %rax;"
+		"jmp *%rax;"
 		"push %rbp;"); }
 	//(*(void (*)(void))idte_offset)();
 	/*__asm__ __volatile__(

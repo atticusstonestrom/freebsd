@@ -58,8 +58,7 @@ idt_hook() {
 	__asm__ __volatile__(
 		"pop %rbp;"
 		//"jmp *idte_offset;"
-		"mov $0xffffffff81080d70, %rax;"
-		"jmp *%rax;"
+		"jmp *0xffffffff81080d70;"
 		"push %rbp;"); }
 	//(*(void (*)(void))idte_offset)();
 	/*__asm__ __volatile__(
@@ -68,6 +67,12 @@ idt_hook() {
 		:::"rax"); }*/
 	//__asm__ __volatile__("jmp *idte_offset"); }
 	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }
+
+__asm__(
+	".global asm_hook;"
+"asm_hook:;"
+	"jmp *0xffffffff81080d70;");
+extern void asm_hook(void);
 
 static int
 load(struct module *module, int cmd, void *arg) {
@@ -91,16 +96,21 @@ load(struct module *module, int cmd, void *arg) {
 				BP_INT, (void *)idte_offset, old_idte.ist, old_idte.type, old_idte.dpl, old_idte.p);
 			struct idte_t new_idte;
 			memcpy(&new_idte, &old_idte, sizeof(struct idte_t));
-			new_idte.offset_0_15=((unsigned long)(&idt_hook))&0xffff;
-			new_idte.offset_16_31=((unsigned long)(&idt_hook)>>16)&0xffff;
-			new_idte.offset_32_63=((unsigned long)(&idt_hook)>>32)&0xffffffff;
+			new_idte.offset_0_15=((unsigned long)(&asm_hook))&0xffff;
+			new_idte.offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
+			new_idte.offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
 			uprintf("new idt entry %d:\n"
 				"\taddr:\t%p\n"
 				"\tist:\t%d\n"
 				"\ttype:\t%d\n"
 				"\tdpl:\t%d\n"
 				"\tp:\t%d\n",
-				BP_INT, &idt_hook, new_idte.ist, new_idte.type, new_idte.dpl, new_idte.p);
+				BP_INT, &asm_hook, new_idte.ist, new_idte.type, new_idte.dpl, new_idte.p);
+			/*uprintf("\n\t\"");
+			for(int i=3072; i<4096; i++) {
+				uprintf("\\x%02x", *(unsigned char *)(idte_offset+i));
+				if(!( (i&0x0f)^0x0f )) {
+					uprintf("\"\n\t\""); }}*/
 			//lock should go here?
 			memcpy((void *)(idtr.addr+BP_INT*sizeof(struct idte_t)), &new_idte, sizeof(struct idte_t));
 			break;

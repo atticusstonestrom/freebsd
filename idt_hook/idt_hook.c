@@ -13,10 +13,10 @@
 #include <sys/syscall.h>
 #include <sys/sysproto.h>
 #include <sys/systm.h>
-#include <sys/lock.h>
+/*#include <sys/lock.h>
 #include <sys/sx.h>
-#include <sys/mutex.h>
-
+#include <sys/mutex.h>*/
+#include <sys/malloc.h>
 
 #define ZD_INT 0x00
 #define IDT_ENTRY_SIZE 8
@@ -31,8 +31,9 @@ struct idte_t {
 	unsigned short offset_16_31;
 	unsigned int offset_32_63;
 	unsigned int rsv; }
-	__attribute__((packed))
-	old_idte;
+	__attribute__((packed));
+struct idte_t *old_idt;
+struct idte_t *new_idt;
 //void (*idte_offset)(void);
 unsigned long idte_offset;
 struct idtr_t {
@@ -40,22 +41,6 @@ struct idtr_t {
 	unsigned long addr; }
 	__attribute__((packed))
 	idtr;
-
-/*static void
-idt_hook() {
-	uprintf("in hook\n");
-	__asm__ __volatile__(
-		"pop %rbp;"
-		"jmp *idte_offset;"
-		//"jmp *0xffffffff81080d70;"
-		"push %rbp;"); }
-	//(*(void (*)(void))idte_offset)();
-	//__asm__ __volatile__(
-		//"mov $0xffffffff81080d70, %%rax;"
-		//"jmp *%%rax;"
-		//:::"rax"); }
-	//__asm__ __volatile__("jmp *idte_offset"); }
-	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }*/
 
 __asm__(
 	".global asm_hook;"
@@ -73,42 +58,60 @@ load(struct module *module, int cmd, void *arg) {
 		case MOD_LOAD:
 			__asm__ __volatile__ (
 				"sidt idtr;"
-				: //"=r"(idtr)
-				:: "memory");
-			uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
+				::: "memory");
+			uprintf("[*] idtr dump\n"
+				"[**] address:\t%p\n"
+				"[**] limit val:\t0x%x\n"
+				"[*] end dump\n\n",
+				(void *)idtr.addr, idtr.lim_val);
+			old_idt=(struct idte_t *)idtr.addr;
+			
+			uprintf("[*] allocating new idt table\n"
+				"[**] %d bytes\n",
+				idtr.lim_val+1);
+			new_idt=malloc(idtr.lim_val+1, M_TEMP, M_NOWAIT);
+			if(new_idt==NULL) {
+				uprintf("[*] failed to allocate, returning enomem\n");
+				error=ENOMEM;
+				break; }
+			uprintf("[*] allocation successful: idt @ %p\n", new_idt);
+			memcpy(new_idt, old_idt, idtr.lim_val+1);
 
-			memcpy(&old_idte, (void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), sizeof(struct idte_t));
-			idte_offset=(long)old_idte.offset_0_15|((long)old_idte.offset_16_31<<16)|((long)old_idte.offset_32_63<<32);
-			uprintf("old idt entry %d:\n"
-				"\taddr:\t%p\n"
-				"\tist:\t%d\n"
-				"\ttype:\t%d\n"
-				"\tdpl:\t%d\n"
-				"\tp:\t%d\n",
-				ZD_INT, (void *)idte_offset, old_idte.ist, old_idte.type, old_idte.dpl, old_idte.p);
-			struct idte_t new_idte;
-			memcpy(&new_idte, &old_idte, sizeof(struct idte_t));
-			new_idte.offset_0_15=((unsigned long)(&asm_hook))&0xffff;
-			new_idte.offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
-			new_idte.offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-			uprintf("new idt entry %d:\n"
-				"\taddr:\t%p\n"
-				"\tist:\t%d\n"
-				"\ttype:\t%d\n"
-				"\tdpl:\t%d\n"
-				"\tp:\t%d\n",
-				ZD_INT, &asm_hook, new_idte.ist, new_idte.type, new_idte.dpl, new_idte.p);
+			uprintf("[*] old idt entry %d:\n"
+				"[**] addr:\t%p\n"
+				"[**] ist:\t%d\n"
+				"[**] type:\t%d\n"
+				"[**] dpl:\t%d\n"
+				"[**] p:\t%d\n"
+				"[*] end dump\n\n",
+				ZD_INT, (void *)(\
+				(long)old_idt[ZD_INT].offset_0_15|((long)old_idt[ZD_INT].offset_16_31<<16)|((long)old_idt[ZD_INT].offset_32_63<<32)),
+				old_idt[ZD_INT].ist, old_idt[ZD_INT].type, old_idt[ZD_INT].dpl, old_idt[ZD_INT].p);
+			//check for present flag
+
+			new_idt[ZD_INT].offset_0_15=((unsigned long)(&asm_hook))&0xffff;
+			new_idt[ZD_INT].offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
+			new_idt[ZD_INT].offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
+			uprintf("[*] new idt entry %d:\n"
+				"[**] addr:\t%p\n"
+				"[**] ist:\t%d\n"
+				"[**] type:\t%d\n"
+				"[**] dpl:\t%d\n"
+				"[**] p:\t%d\n"
+				"[*] end dump\n\n",
+				ZD_INT, (void *)(\
+				(long)new_idt[ZD_INT].offset_0_15|((long)new_idt[ZD_INT].offset_16_31<<16)|((long)new_idt[ZD_INT].offset_32_63<<32)),
+				new_idt[ZD_INT].ist, new_idt[ZD_INT].type, new_idt[ZD_INT].dpl, new_idt[ZD_INT].p);
 			/*uprintf("\n\t\"");
 			for(int i=3072; i<4096; i++) {
 				uprintf("\\x%02x", *(unsigned char *)(idte_offset+i));
 				if(!( (i&0x0f)^0x0f )) {
 					uprintf("\"\n\t\""); }}*/
 			//lock should go here?
-			memcpy((void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), &new_idte, sizeof(struct idte_t));
 			break;
 		case MOD_UNLOAD:
 			//lock here?
-			memcpy((void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), &old_idte, sizeof(struct idte_t));
+			free(new_idt, M_TEMP);
 			break;
 		default:
 			error=EOPNOTSUPP;

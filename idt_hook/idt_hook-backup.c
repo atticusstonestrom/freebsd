@@ -41,39 +41,29 @@ struct idtr_t {
 	__attribute__((packed))
 	idtr;
 
-static void
+/*static void
 idt_hook() {
-	/*uprintf("in hook\n");
 	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");
-	uprintf("in hook\n");*/
 	__asm__ __volatile__(
 		"pop %rbp;"
 		"jmp *idte_offset;"
 		//"jmp *0xffffffff81080d70;"
 		"push %rbp;"); }
 	//(*(void (*)(void))idte_offset)();
-	/*__asm__ __volatile__(
-		"mov $0xffffffff81080d70, %%rax;"
-		"jmp *%%rax;"
-		:::"rax"); }*/
+	//__asm__ __volatile__(
+		//"mov $0xffffffff81080d70, %%rax;"
+		//"jmp *%%rax;"
+		//:::"rax"); }
 	//__asm__ __volatile__("jmp *idte_offset"); }
-	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }
+	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }*/
 
 __asm__(
 	".global asm_hook;"
 "asm_hook:;"
+	"jmp *idte_offset;");
 	//"push idte_offset;"
-	"push $0xffffffff81080f90;"
-	"ret;");
+	//"push $0xffffffff81080f90;"
+	//"ret;");
 extern void asm_hook(void);
 
 static int

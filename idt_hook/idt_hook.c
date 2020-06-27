@@ -71,7 +71,9 @@ idt_hook() {
 __asm__(
 	".global asm_hook;"
 "asm_hook:;"
-	"jmp *idte_offset;");
+	//"push idte_offset;"
+	"push $0xffffffff81080f90;"
+	"ret;");
 extern void asm_hook(void);
 
 static int

@@ -119,6 +119,9 @@ load(struct module *module, int cmd, void *arg) {
 				for(j=0; j<8; j++) {
 					uprintf("%02x ", *((unsigned char *)(new_idt)+i*8+j)); }}*/
 			uprintf("[*]  done\n\n");
+			for(int i=0; i<64; i++) {
+				uprintf("%d\n", i); }
+			__asm__ __volatile__("lidt old_idtr");
 			break;
 		case MOD_UNLOAD:
 			uprintf("[*]  loading old idt\n"

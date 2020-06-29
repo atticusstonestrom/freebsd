@@ -109,11 +109,17 @@ idt_init(void) {
 
 static void __exit
 idt_fini(void) {
+	unsigned long cr0;
+	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+	cr0 &= ~(long)0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
 	__asm__ __volatile__("cli");
 	zd_idte->offset_0_15=idte_offset&0xffff;
 	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
 	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
-	__asm__ __volatile__("sti"); }
+	__asm__ __volatile__("sti");
+	cr0 |= 0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0)); }
 
 module_init(idt_init);
 module_exit(idt_fini);

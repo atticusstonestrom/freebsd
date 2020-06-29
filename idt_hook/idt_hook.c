@@ -105,7 +105,7 @@ init() {
 	__asm__ __volatile__("lidt %0" :: "m"(new_idtr));
 	uprintf("[*]  done\n\n");
 	
-	__asm__ __volatile__("lidt %0" :: "m"(old_idtr));
+	//__asm__ __volatile__("lidt %0" :: "m"(old_idtr));
 	return 0; }
 
 static void

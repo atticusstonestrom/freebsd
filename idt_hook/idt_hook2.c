@@ -61,7 +61,7 @@ init() {
 	idte_offset=(long)(zd_idte->offset_0_15)|((long)(zd_idte->offset_16_31)<<16)|((long)(zd_idte->offset_32_63)<<32);
 	uprintf("[*]  old idt entry %d:\n"
 		"[**] addr:\t%p\n"
-		"[**] selector:\t0x%x\n"
+		"[**] segment:\t0x%x\n"
 		"[**] ist:\t%d\n"
 		"[**] type:\t%d\n"
 		"[**] dpl:\t%d\n"
@@ -72,7 +72,7 @@ init() {
 	if(!zd_idte->p) {
 		uprintf("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
-	
+
 	__asm__ __volatile__("cli");
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
@@ -80,7 +80,7 @@ init() {
 	__asm__ __volatile__("sti");
 	uprintf("[*]  new idt entry %d:\n"
 		"[**] addr:\t%p\n"
-		"[**] selector:\t0x%x\n"
+		"[**] segment:\t0x%x\n"
 		"[**] ist:\t%d\n"
 		"[**] type:\t%d\n"
 		"[**] dpl:\t%d\n"
@@ -89,7 +89,7 @@ init() {
 		ZD_INT, (void *)(\
 		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
 		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
-	
+
 	return 0; }
 
 static void

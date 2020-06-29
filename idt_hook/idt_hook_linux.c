@@ -4,15 +4,14 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/proc.h>
-#include <sys/module.h>
-#include <sys/sysent.h>
-#include <sys/kernel.h>
-#include <sys/syscall.h>
-#include <sys/sysproto.h>
-#include <sys/systm.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Atticus Stonestrom");
+MODULE_DESCRIPTION("Hooks the zero divisor IDT entry");
+MODULE_VERSION("0.01");
 
 
 struct idte_t {
@@ -45,51 +44,55 @@ __asm__(
 extern void asm_hook(void);
 
 
-static int
-init() {
+static int __init
+idt_init(void) {
+
+	printk("%p\n", &asm_hook);
+	printk("%p\n", &idte_offset);
+
 	__asm__ __volatile__ (
 		"cli;"
 		"sidt %0;"
 		"sti;"
 		:: "m"(idtr));
-	uprintf("[*]  idtr dump\n"
-		"[**] address:\t%p\n"
-		"[**] lim val:\t0x%x\n"
-		"[*]  end dump\n\n",
-		idtr.addr, idtr.lim_val);
+	printk("[*]  idtr dump\n"
+	       "[**] address:\t%p\n"
+	       "[**] lim val:\t0x%x\n"
+	       "[*]  end dump\n\n",
+	       idtr.addr, idtr.lim_val);
 	zd_idte=(idtr.addr)+ZD_INT;
 
 	idte_offset=(long)(zd_idte->offset_0_15)|((long)(zd_idte->offset_16_31)<<16)|((long)(zd_idte->offset_32_63)<<32);
-	uprintf("[*]  old idt entry %d:\n"
-		"[**] addr:\t%p\n"
-		"[**] segment:\t0x%x\n"
-		"[**] ist:\t%d\n"
-		"[**] type:\t%d\n"
-		"[**] dpl:\t%d\n"
-		"[**] p:\t\t%d\n"
-		"[*]  end dump\n\n",
-		ZD_INT, (void *)idte_offset, zd_idte->segment_selector, 
-		zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
+	printk("[*]  old idt entry %d:\n"
+	       "[**] addr:\t%p\n"
+	       "[**] segment:\t0x%x\n"
+	       "[**] ist:\t%d\n"
+	       "[**] type:\t%d\n"
+	       "[**] dpl:\t%d\n"
+	       "[**] p:\t\t%d\n"
+	       "[*]  end dump\n\n",
+	       ZD_INT, (void *)idte_offset, zd_idte->segment_selector, 
+	       zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	if(!zd_idte->p) {
-		uprintf("[*] fatal: handler segment not present\n");
+		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
-	__asm__ __volatile__("cli");
+	/*__asm__ __volatile__("cli");
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
 	__asm__ __volatile__("sti");
-	uprintf("[*]  new idt entry %d:\n"
-		"[**] addr:\t%p\n"
-		"[**] segment:\t0x%x\n"
-		"[**] ist:\t%d\n"
-		"[**] type:\t%d\n"
-		"[**] dpl:\t%d\n"
-		"[**] p:\t\t%d\n"
-		"[*]  end dump\n\n",
-		ZD_INT, (void *)(\
-		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
-		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
+	printk("[*]  new idt entry %d:\n"
+	       "[**] addr:\t%p\n"
+	       "[**] segment:\t0x%x\n"
+	       "[**] ist:\t%d\n"
+	       "[**] type:\t%d\n"
+	       "[**] dpl:\t%d\n"
+	       "[**] p:\t\t%d\n"
+	       "[*]  end dump\n\n",
+	       ZD_INT, (void *)(\
+	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
+	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);*/
 	
 	//uprintf("%p\n", &asm_hook);
 	/*unsigned short cs;
@@ -101,32 +104,13 @@ init() {
 
 	return 0; }
 
-static void
-fini() {
+static void __exit
+idt_fini(void) {
 	__asm__ __volatile__("cli");
-	zd_idte->offset_0_15=idte_offset&0xffff;
+	/*zd_idte->offset_0_15=idte_offset&0xffff;
 	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
-	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
+	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;*/
 	__asm__ __volatile__("sti"); }
 
-static int
-load(struct module *module, int cmd, void *arg) {
-	int error=0;
-	switch(cmd) {
-		case MOD_LOAD:
-			error=init();
-			break;
-		case MOD_UNLOAD:
-			fini();
-			break;
-		default:
-			error=EOPNOTSUPP;
-			break; }
-	return error; }
-
-static moduledata_t idt_hook_mod = {
-	"idt_hook",
-	load,
-	NULL };
-
-DECLARE_MODULE(idt_hook, idt_hook_mod, SI_SUB_DRIVERS, SI_ORDER_MIDDLE);
+module_init(idt_init);
+module_exit(idt_fini);

@@ -89,6 +89,13 @@ init() {
 		ZD_INT, (void *)(\
 		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
 		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
+	
+	unsigned short cs;
+	__asm__ __volatile__("mov %%cs, %0" : "=r"(cs));
+	uprintf("cs: 0x%x\n", cs);
+	for(int i=0; i<64; i++) {
+		uprintf("idt entry %d:\t%p\n", i,
+			(void *)((long)idtr.addr[i].offset_0_15|((long)idtr.addr[i].offset_16_31<<16)|((long)idtr.addr[i].offset_32_63<<32))); }
 
 	return 0; }
 

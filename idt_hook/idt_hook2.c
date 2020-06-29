@@ -38,7 +38,7 @@ struct idtr_t {
 	idtr;
 
 __asm__(
-	//".text;"
+	".text;"
 	".global asm_hook;"
 "asm_hook:;"
 	"jmp *idte_offset;");

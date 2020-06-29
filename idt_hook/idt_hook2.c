@@ -18,11 +18,11 @@
 struct idte_t {
 	unsigned short offset_0_15;
 	unsigned short segment_selector;
-	unsigned char ist;	//look up interrupt stack table; if 0, field is unused
+	unsigned char ist;			//interrupt stack table
 	unsigned char type:4;
 	unsigned char zero_12:1;
-	unsigned char dpl:2;
-	unsigned char p:1;
+	unsigned char dpl:2;			//descriptor privilege level
+	unsigned char p:1;			//present flag
 	unsigned short offset_16_31;
 	unsigned int offset_32_63;
 	unsigned int rsv; }
@@ -30,7 +30,7 @@ struct idte_t {
 	*zd_idte;
 
 #define ZD_INT 0x00
-unsigned long idte_offset;
+unsigned long idte_offset;			//contains absolute address of original interrupt handler
 struct idtr_t {
 	unsigned short lim_val;
 	struct idte_t *addr; }
@@ -40,8 +40,7 @@ struct idtr_t {
 __asm__(
 	".global asm_hook;"
 "asm_hook:;"
-	//"jmp *idte_offset;");
-	"jmp *0xffffffff81080f90;");
+	"jmp *idte_offset;");
 extern void asm_hook(void);
 
 

@@ -7,6 +7,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <asm/io.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
@@ -47,8 +48,8 @@ extern void asm_hook(void);
 static int __init
 idt_init(void) {
 
-	printk("%p\n", &asm_hook);
-	printk("%p\n", &idte_offset);
+	printk("%px\n", &asm_hook);
+	printk("%px\n", &idte_offset);
 
 	__asm__ __volatile__ (
 		"cli;"
@@ -56,7 +57,7 @@ idt_init(void) {
 		"sti;"
 		:: "m"(idtr));
 	printk("[*]  idtr dump\n"
-	       "[**] address:\t%p\n"
+	       "[**] address:\t%px\n"
 	       "[**] lim val:\t0x%x\n"
 	       "[*]  end dump\n\n",
 	       idtr.addr, idtr.lim_val);
@@ -64,7 +65,7 @@ idt_init(void) {
 
 	idte_offset=(long)(zd_idte->offset_0_15)|((long)(zd_idte->offset_16_31)<<16)|((long)(zd_idte->offset_32_63)<<32);
 	printk("[*]  old idt entry %d:\n"
-	       "[**] addr:\t%p\n"
+	       "[**] addr:\t%px\n"
 	       "[**] segment:\t0x%x\n"
 	       "[**] ist:\t%d\n"
 	       "[**] type:\t%d\n"
@@ -77,13 +78,16 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
+	/*unsigned long cr0;
+	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+	printk("cr0: %lx\n", cr0);*/
 	/*__asm__ __volatile__("cli");
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
+	__asm__ __volatile__("sti");*/
 	printk("[*]  new idt entry %d:\n"
-	       "[**] addr:\t%p\n"
+	       "[**] addr:\t%px\n"
 	       "[**] segment:\t0x%x\n"
 	       "[**] ist:\t%d\n"
 	       "[**] type:\t%d\n"
@@ -92,7 +96,7 @@ idt_init(void) {
 	       "[*]  end dump\n\n",
 	       ZD_INT, (void *)(\
 	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
-	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);*/
+	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	
 	//uprintf("%p\n", &asm_hook);
 	/*unsigned short cs;

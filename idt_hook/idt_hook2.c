@@ -41,7 +41,7 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"jmp *idte_offset;");
+	"jmp *(idte_offset);");
 extern void asm_hook(void);
 
 

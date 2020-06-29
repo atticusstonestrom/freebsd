@@ -13,13 +13,8 @@
 #include <sys/syscall.h>
 #include <sys/sysproto.h>
 #include <sys/systm.h>
-#include <sys/lock.h>
-#include <sys/sx.h>
-#include <sys/mutex.h>
 
 
-#define ZD_INT 0x00
-#define IDT_ENTRY_SIZE 8
 struct idte_t {
 	unsigned short offset_0_15;
 	unsigned short segment_selector;
@@ -33,7 +28,8 @@ struct idte_t {
 	unsigned int rsv; }
 	__attribute__((packed))
 	old_idte;
-//void (*idte_offset)(void);
+
+#define ZD_INT 0x00
 unsigned long idte_offset;
 struct idtr_t {
 	unsigned short lim_val;

@@ -27,84 +27,88 @@ struct idte_t {
 	unsigned int offset_32_63;
 	unsigned int rsv; }
 	__attribute__((packed))
-	old_idte;
+	*zd_idte;
 
 #define ZD_INT 0x00
 unsigned long idte_offset;
 struct idtr_t {
 	unsigned short lim_val;
-	unsigned long addr; }
+	struct idte_t *addr; }
 	__attribute__((packed))
 	idtr;
-
-/*static void
-idt_hook() {
-	uprintf("in hook\n");
-	__asm__ __volatile__(
-		"pop %rbp;"
-		"jmp *idte_offset;"
-		//"jmp *0xffffffff81080d70;"
-		"push %rbp;"); }
-	//(*(void (*)(void))idte_offset)();
-	//__asm__ __volatile__(
-		//"mov $0xffffffff81080d70, %%rax;"
-		//"jmp *%%rax;"
-		//:::"rax"); }
-	//__asm__ __volatile__("jmp *idte_offset"); }
-	//__asm__ __volatile__("jmp 0xffffffff81080d70"); }*/
 
 __asm__(
 	".global asm_hook;"
 "asm_hook:;"
 	"jmp *idte_offset;");
-	//"push idte_offset;"
-	//"push $0xffffffff81080f90;"
-	//"ret;");
 extern void asm_hook(void);
+
+
+static int
+init() {
+	__asm__ __volatile__ (
+		"cli;"
+		"sidt %0;"
+		"sti;"
+		:: "m"(idtr));
+	uprintf("[*]  idtr dump\n"
+		"[**] address:\t%p\n"
+		"[**] lim val:\t0x%x\n"
+		"[*]  end dump\n\n",
+		idtr.addr, idtr.lim_val);
+	zd_idte=(idtr.addr)+ZD_INT;
+
+	idte_offset=(long)(zd_idte->offset_0_15)|((long)(zd_idte->offset_16_31)<<16)|((long)(zd_idte->offset_32_63)<<32);
+	uprintf("[*]  old idt entry %d:\n"
+		"[**] addr:\t%p\n"
+		"[**] selector:\t0x%x\n"
+		"[**] ist:\t%d\n"
+		"[**] type:\t%d\n"
+		"[**] dpl:\t%d\n"
+		"[**] p:\t\t%d\n"
+		"[*]  end dump\n\n",
+		ZD_INT, (void *)idte_offset, zd_idte->segment_selector, 
+		zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
+	if(!zd_idte->p) {
+		uprintf("[*] fatal: handler segment not present\n");
+		return ENOSYS; }
+	
+	__asm__ __volatile__("cli");
+	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
+	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
+	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
+	__asm__ __volatile__("sti");
+	uprintf("[*]  new idt entry %d:\n"
+		"[**] addr:\t%p\n"
+		"[**] selector:\t0x%x\n"
+		"[**] ist:\t%d\n"
+		"[**] type:\t%d\n"
+		"[**] dpl:\t%d\n"
+		"[**] p:\t\t%d\n"
+		"[*]  end dump\n\n",
+		ZD_INT, (void *)(\
+		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
+		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
+	
+	return 0; }
+
+static void
+fini() {
+	__asm__ __volatile__("cli");
+	zd_idte->offset_0_15=idte_offset&0xffff;
+	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
+	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
+	__asm__ __volatile__("sti"); }
 
 static int
 load(struct module *module, int cmd, void *arg) {
 	int error=0;
 	switch(cmd) {
 		case MOD_LOAD:
-			__asm__ __volatile__ (
-				"sidt idtr;"
-				: //"=r"(idtr)
-				:: "memory");
-			uprintf("idtr: addr: %p, lim_val: 0x%x \n", (void *)idtr.addr, idtr.lim_val);
-
-			memcpy(&old_idte, (void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), sizeof(struct idte_t));
-			idte_offset=(long)old_idte.offset_0_15|((long)old_idte.offset_16_31<<16)|((long)old_idte.offset_32_63<<32);
-			uprintf("old idt entry %d:\n"
-				"\taddr:\t%p\n"
-				"\tist:\t%d\n"
-				"\ttype:\t%d\n"
-				"\tdpl:\t%d\n"
-				"\tp:\t%d\n",
-				ZD_INT, (void *)idte_offset, old_idte.ist, old_idte.type, old_idte.dpl, old_idte.p);
-			struct idte_t new_idte;
-			memcpy(&new_idte, &old_idte, sizeof(struct idte_t));
-			new_idte.offset_0_15=((unsigned long)(&asm_hook))&0xffff;
-			new_idte.offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
-			new_idte.offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-			uprintf("new idt entry %d:\n"
-				"\taddr:\t%p\n"
-				"\tist:\t%d\n"
-				"\ttype:\t%d\n"
-				"\tdpl:\t%d\n"
-				"\tp:\t%d\n",
-				ZD_INT, &asm_hook, new_idte.ist, new_idte.type, new_idte.dpl, new_idte.p);
-			/*uprintf("\n\t\"");
-			for(int i=3072; i<4096; i++) {
-				uprintf("\\x%02x", *(unsigned char *)(idte_offset+i));
-				if(!( (i&0x0f)^0x0f )) {
-					uprintf("\"\n\t\""); }}*/
-			//lock should go here?
-			memcpy((void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), &new_idte, sizeof(struct idte_t));
+			error=init();
 			break;
 		case MOD_UNLOAD:
-			//lock here?
-			memcpy((void *)(idtr.addr+ZD_INT*sizeof(struct idte_t)), &old_idte, sizeof(struct idte_t));
+			fini();
 			break;
 		default:
 			error=EOPNOTSUPP;

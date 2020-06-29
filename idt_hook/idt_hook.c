@@ -47,7 +47,11 @@ extern void asm_hook(void);
 
 static int
 init() {
-	__asm__ __volatile__ ("sidt %0" :: "m"(old_idtr));
+	__asm__ __volatile__ (
+		"cli;"
+		"sidt %0;"
+		"sti;"
+		:: "m"(old_idtr));
 	uprintf("[*]  idtr dump\n"
 		"[**] address:\t%p\n"
 		"[**] lim val:\t0x%x\n"
@@ -102,10 +106,18 @@ init() {
 	uprintf("[*]  loading new idt\n"
 		"[**] address:\t%p\n",
 		new_idt);
-	__asm__ __volatile__("lidt %0" :: "m"(new_idtr));
+	__asm__ __volatile__(
+		"cli;"
+		"lidt %0;"
+		"sti;"
+		:: "m"(new_idtr));
 	uprintf("[*]  done\n\n");
 	
-	//__asm__ __volatile__("lidt %0" :: "m"(old_idtr));
+	/*__asm__ __volatile__(
+		"cli;"
+		"lidt %0;"
+		"sti;"
+		:: "m"(old_idtr));*/
 	return 0; }
 
 static void
@@ -113,7 +125,11 @@ fini() {
 	uprintf("[*]  loading old idt\n"
 		"[**] address:\t%p\n",
 		old_idt);
-	__asm__ __volatile__("lidt old_idtr");
+	__asm__ __volatile__(
+		"cli;"
+		"lidt %0;"
+		"sti;"
+		:: "m"(old_idtr));
 	uprintf("[*]  done\n\n");
 
 	uprintf("[*]  freeing new idt\n"

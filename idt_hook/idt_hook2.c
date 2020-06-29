@@ -91,7 +91,6 @@ init() {
 		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
 		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	
-	
 	//uprintf("%p\n", &asm_hook);
 	/*unsigned short cs;
 	__asm__ __volatile__("mov %%cs, %0" : "=r"(cs));

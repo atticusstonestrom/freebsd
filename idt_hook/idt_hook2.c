@@ -40,7 +40,8 @@ struct idtr_t {
 __asm__(
 	".global asm_hook;"
 "asm_hook:;"
-	"jmp *idte_offset;");
+	//"jmp *idte_offset;");
+	"jmp *0xffffffff81080f90;");
 extern void asm_hook(void);
 
 

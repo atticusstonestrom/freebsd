@@ -1,1 +1,3 @@
 gdb -batch -ex 'file ./sc' -ex 'disassemble shellcode' > sc.txt
+VBoxManage startvm freebsd -E VBOX_GUI_DBG_AUTO_SHOW=true -E VBOX_GUI_DBG_ENABLED=true
+https://www.virtualbox.org/manual/ch12.html#ts_debugger

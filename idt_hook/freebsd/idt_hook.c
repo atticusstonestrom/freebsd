@@ -59,7 +59,10 @@ init() {
 		idtr.addr, idtr.lim_val);
 	zd_idte=(idtr.addr)+ZD_INT;
 
-	idte_offset=(long)(zd_idte->offset_0_15)|((long)(zd_idte->offset_16_31)<<16)|((long)(zd_idte->offset_32_63)<<32);
+	idte_offset=0
+		| ((long)(zd_idte->offset_0_15))
+		| ((long)(zd_idte->offset_16_31)<<16)
+		| ((long)(zd_idte->offset_32_63)<<32);
 	uprintf("[*]  old idt entry %d:\n"
 		"[**] addr:\t%p\n"
 		"[**] segment:\t0x%x\n"

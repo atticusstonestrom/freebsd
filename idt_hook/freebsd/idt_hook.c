@@ -91,7 +91,7 @@ init() {
 		(long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
 		zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	
-	unsigned int ia32_efer;
+	/*unsigned int ia32_efer;
 	__asm__ __volatile__(
 		"mov $0xc0000080, %%ecx;"
 		"rdmsr;"
@@ -101,8 +101,7 @@ init() {
 		"mov %%eax, %0;"
 		: "=r"(ia32_efer) :: "ecx");
 	uprintf("ia32_efer: 0x%x\n", ia32_efer);
-	uprintf("idte_offset @ %p\n", &idte_offset);
-
+	uprintf("idte_offset @ %p\n", &idte_offset);*/
 	
 	//uprintf("%p\n", &asm_hook);
 	/*unsigned short cs;

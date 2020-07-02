@@ -38,17 +38,17 @@ struct idtr_t {
 	idtr;
 
 int counter=0;
-__attribute__((__used__))
+/*__attribute__((__used__))
 static void
 hook(void) {
 	printk("in the hook! counter %d\n", ++counter);
-	return; }
+	return; }*/
 
 __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"push %rax;"
+	/*"push %rax;"
 	"push %rbx;"
 	"push %rcx;"
 	"push %rdx;"
@@ -68,7 +68,8 @@ __asm__(
 	"pop %rdx;"
 	"pop %rcx;"
 	"pop %rbx;"
-	"pop %rax;"
+	"pop %rax;"*/
+	"incl counter;"
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 
@@ -140,6 +141,7 @@ idt_init(void) {
 
 static void __exit
 idt_fini(void) {
+	printk("[*] counter: %d\n\n", counter);
 	unsigned long cr0;
 	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
 	cr0 &= ~(long)0x10000;

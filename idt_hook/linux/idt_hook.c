@@ -37,10 +37,19 @@ struct idtr_t {
 	__attribute__((packed))
 	idtr;
 
+int counter=0;
+static void
+hook(void) {
+	printk("in the hook! counter %d\n", counter);
+	return; }
+
 __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
+	"push rax;"
+	"call hook;"
+	"pop rax;"
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 

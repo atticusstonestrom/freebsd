@@ -1,3 +1,8 @@
 gdb -batch -ex 'file ./sc' -ex 'disassemble shellcode' > sc.txt
 VBoxManage startvm freebsd -E VBOX_GUI_DBG_AUTO_SHOW=true -E VBOX_GUI_DBG_ENABLED=true
 https://www.virtualbox.org/manual/ch12.html#ts_debugger
+
+https://gist.github.com/zg/38a3afa112ddf7de4912aafc249ec82f
+https://graspingtech.com/ubuntu-desktop-18.04-virtual-machine-macos-qemu/
+qemu-system-x86_64 -drive file=./ubuntu.qcow2 -boot d  -m 2048
+https://www.unixmen.com/how-to-install-and-configure-qemu-in-ubuntu/

@@ -38,6 +38,7 @@ struct idtr_t {
 	idtr;
 
 int counter=0;
+__attribute__((__used__))
 static void
 hook(void) {
 	printk("in the hook! counter %d\n", counter);

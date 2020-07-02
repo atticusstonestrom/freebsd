@@ -48,9 +48,11 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"push %rax;"
+	"pushfl;"
+	"pushal;"
 	"call hook;"
-	"pop %rax;"
+	"popal;"
+	"popfl;"
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 

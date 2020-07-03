@@ -1,0 +1,20 @@
+https://stackoverflow.com/questions/980999/what-does-multicore-assembly-language-look-like
+
+https://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-in-x86-assembly/56803909
+
+file:///Users/atticusstonestrom/Desktop/math/elliptic%20curves/hc/books/systems/51534-developing-multithreaded-applications.pdf
+
+https://stackoverflow.com/questions/3339141/x86-lock-question-on-multi-core-cpus/3339380#3339380
+
+http://davidad.github.io/blog/2014/03/23/concurrency-primitives-in-intel-64-assembly/
+
+http://www0.cs.ucl.ac.uk/staff/B.Karp/3007/s2018/lectures/3007-lecture17-threads-x86-64.pdf
+
+https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell-which-core-the-instruction-is-being-run-on/56622112
+apic id
+
+https://stackoverflow.com/questions/12894078/what-is-the-purpose-of-the-pause-instruction-in-x86
+
+https://wiki.osdev.org/Detecting_CPU_Topology_(80x86)
+
+hyperthreading

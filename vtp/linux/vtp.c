@@ -99,6 +99,7 @@ hook(int dirfd, const char *pathname, mode_t mode) {
 
 static void __exit
 vtp_fini(void) {
+	__asm__ __volatile__("wrmsr"::"c"(0xc0000082), "a"(new_lstar.eax), "d"(new_lstar.edx));
 	printk("[*] counter:\t%d\n", counter);
 	return;
 	/*unsigned long cr0;

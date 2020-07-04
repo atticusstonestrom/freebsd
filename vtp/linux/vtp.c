@@ -3,23 +3,19 @@
 //4 of volume 3A of the intel developers' manual,   //
 //which starts at pg 2910                           //
 //////////////////////////////////////////////////////
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/unistd.h>
+#include <asm/io.h>
 
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/proc.h>
-#include <sys/module.h>
-#include <sys/sysent.h>
-#include <sys/kernel.h>
-#include <sys/sysproto.h>
-#include <sys/systm.h>
-/*struct pmap_statistics {
-	int x; };
-#include <machine/pmap.h>
-#include <machine/vmparam.h>*/
 
-struct vtp_args {
-	unsigned long vaddr;
-	unsigned long *to_fill; };
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Atticus Stonestrom");
+MODULE_DESCRIPTION("hooks mkdirat to give virtual to physical addressing");
+MODULE_VERSION("0.01");
+
+int (*original_call)(int, const char *, mode_t);
 
 /////////////////////////////////////////////////////
 //virtual address masks
@@ -39,11 +35,10 @@ struct vtp_args {
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
-#define	DMAP_MIN_ADDRESS	(0xfffff80000000000)
-#define PHYS_TO_VIRT(x) 	((x)|DMAP_MIN_ADDRESS)
+#define SYS_CALL_TABLE ((void **)0xffffffff820013a0) //find sys_call_table in /boot/System.map-5.4.0-39-generic
 /////////////////////////////////////////////////////
 
-static int
+/*static int
 vtp(struct thread *td, void *args) {
 	//uprintf("[debug]: DMAP_MIN_ADDRESS: 0x%lx\n", DMAP_MIN_ADDRESS);
 	struct vtp_args *uap=args;
@@ -133,28 +128,42 @@ vtp(struct thread *td, void *args) {
 	uprintf("[debug]: pte:\t\t0x%lx\n", psentry);
 	paddr=(psentry&0x0ffffffffff000)|(vaddr&0xfff);
 	return copyout(&paddr, to_fill, sizeof(unsigned long)); }
-	////////////////////////////////////////////////////////////////////
-
-static
-struct sysent vtp_sysent = {
-	2,
-	vtp };
-
-static int offset=NO_SYSCALL;
+	////////////////////////////////////////////////////////////////////*/
 
 static int
-load(struct module *module, int cmd, void *arg) {
-	int error=0;
-	switch(cmd) {
-		case MOD_LOAD:
-			uprintf("loading syscall at offset %d\n", offset);
-			break;
-		case MOD_UNLOAD:
-			uprintf("unloading syscall from offset %d\n", offset);
-			break;
-		default:
-			error=EOPNOTSUPP;
-			break; }
-	return error; }
+hook(int dirfd, const char *pathname, mode_t mode) {
+	printk("[*] pathname: %s\n"
+	       "[*] permissions: %o\n",
+	       pathname, mode);
+	return (*original_call)(dirfd, pathname, mode); }
 
-SYSCALL_MODULE(vtp, &offset, &vtp_sysent, load, NULL);
+static int __init
+vtp_init(void) {
+	//printk("[*] %px\n", *SYS_CALL_TABLE);
+	printk("[*] %px\n", &hook);
+	/*original_call=SYS_CALL_TABLE[__NR_mkdirat];
+	printk("[*] old: %px\n"
+	       "[*] new: %px\n",
+	       original_call, &hook);*/
+	/*unsigned long cr0;
+	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+	cr0 &= ~(long)0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	SYS_CALL_TABLE[__NR_mkdirat]=&hook;
+	cr0 |= 0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));*/
+	return 0; }
+
+static void __exit
+vtp_fini(void) {
+	return;
+	/*unsigned long cr0;
+	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+	cr0 &= ~(long)0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	SYS_CALL_TABLE[__NR_mkdirat]=original_call;
+	cr0 |= 0x10000;
+	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));*/ }
+
+module_init(vtp_init);
+module_exit(vtp_fini);

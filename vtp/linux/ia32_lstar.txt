@@ -1,0 +1,121 @@
+VBoxDbg> u 0xffffffff96600010
+%ffffffff96600010 0f 01 f8                swapgs
+%ffffffff96600013 65 48 89 24 25 14 60 00 00 mov qword [gs:00000000000006014h], rsp
+%ffffffff9660001c 66 90                   nop
+%ffffffff9660001e 0f 20 dc                mov esp, cr3
+%ffffffff96600021 48 0f ba ec 3f          bts rsp, 03fh
+%ffffffff96600026 48 81 e4 ff e7 ff ff    and rsp, 0ffffffffffffe7ffh
+%ffffffff9660002d 0f 22 dc                mov cr3, esp
+%ffffffff96600030 65 48 8b 24 25 0c 60 00 00 mov rsp, qword [gs:0000000000000600ch]
+%ffffffff96600039 6a 2b                   push byte 0000000000000002bh
+%ffffffff9660003b 65 ff 34 25 14 60 00 00 push qword [gs:00000000000006014h]
+VBoxDbg> u ffffffff9660003b
+%ffffffff9660003b 65 ff 34 25 14 60 00 00 push qword [gs:00000000000006014h]
+%ffffffff96600043 41 53                   push r11
+%ffffffff96600045 6a 33                   push byte 00000000000000033h
+%ffffffff96600047 51                      push rcx
+%ffffffff96600048 50                      push rax
+%ffffffff96600049 57                      push rdi
+%ffffffff9660004a 56                      push rsi
+%ffffffff9660004b 52                      push rdx
+%ffffffff9660004c 51                      push rcx
+%ffffffff9660004d 6a da                   push byte 0ffffffffffffffdah
+VBoxDbg> u ffffffff9660004d
+%ffffffff9660004d 6a da                   push byte 0ffffffffffffffdah
+%ffffffff9660004f 41 50                   push r8
+%ffffffff96600051 41 51                   push r9
+%ffffffff96600053 41 52                   push r10
+%ffffffff96600055 41 53                   push r11
+%ffffffff96600057 53                      push rbx
+%ffffffff96600058 55                      push rbp
+%ffffffff96600059 41 54                   push r12
+%ffffffff9660005b 41 55                   push r13
+%ffffffff9660005d 41 56                   push r14
+VBoxDbg> u ffffffff9660005d
+%ffffffff9660005d 41 56                   push r14
+%ffffffff9660005f 41 57                   push r15
+%ffffffff96600061 31 d2                   xor edx, edx
+%ffffffff96600063 31 c9                   xor ecx, ecx
+%ffffffff96600065 45 31 c0                xor r8d, r8d
+%ffffffff96600068 45 31 c9                xor r9d, r9d
+%ffffffff9660006b 45 31 d2                xor r10d, r10d
+%ffffffff9660006e 45 31 db                xor r11d, r11d
+%ffffffff96600071 31 db                   xor ebx, ebx
+%ffffffff96600073 31 ed                   xor ebp, ebp
+VBoxDbg> u ffffffff96600073
+%ffffffff96600073 31 ed                   xor ebp, ebp
+%ffffffff96600075 45 31 e4                xor r12d, r12d
+%ffffffff96600078 45 31 ed                xor r13d, r13d
+%ffffffff9660007b 45 31 f6                xor r14d, r14d
+%ffffffff9660007e 45 31 ff                xor r15d, r15d
+%ffffffff96600081 48 89 c7                mov rdi, rax
+%ffffffff96600084 48 89 e6                mov rsi, rsp
+%ffffffff96600087 e8 e4 43 40 ff          call 0ffffffff95a04470h
+%ffffffff9660008c 48 8b 4c 24 58          mov rcx, qword [rsp+058h]
+%ffffffff96600091 4c 8b 9c 24 80 00 00 00 mov r11, qword [rsp+000000080h]
+VBoxDbg> u ffffffff96600091
+%ffffffff96600091 4c 8b 9c 24 80 00 00 00 mov r11, qword [rsp+000000080h]
+%ffffffff96600099 49 39 cb                cmp r11, rcx
+%ffffffff9660009c 0f 85 92 09 00 00       jne +000000992h (0ffffffff96600a34h)
+%ffffffff966000a2 48 c1 e1 10             sal rcx, 010h
+%ffffffff966000a6 48 c1 f9 10             sar rcx, 010h
+%ffffffff966000aa 49 39 cb                cmp r11, rcx
+%ffffffff966000ad 0f 85 81 09 00 00       jne +000000981h (0ffffffff96600a34h)
+%ffffffff966000b3 48 83 bc 24 88 00 00 00 33 cmp qword [rsp+000000088h], byte 00000000000000033h
+%ffffffff966000bc 0f 85 72 09 00 00       jne +000000972h (0ffffffff96600a34h)
+%ffffffff966000c2 4c 8b 5c 24 30          mov r11, qword [rsp+030h]
+VBoxDbg> u ffffffff966000c2
+%ffffffff966000c2 4c 8b 5c 24 30          mov r11, qword [rsp+030h]
+%ffffffff966000c7 4c 39 9c 24 90 00 00 00 cmp qword [rsp+000000090h], r11
+%ffffffff966000cf 0f 85 5f 09 00 00       jne +00000095fh (0ffffffff96600a34h)
+%ffffffff966000d5 49 f7 c3 00 01 01 00    test r11, 00000000000010100h
+%ffffffff966000dc 0f 85 52 09 00 00       jne +000000952h (0ffffffff96600a34h)
+%ffffffff966000e2 48 83 bc 24 a0 00 00 00 2b cmp qword [rsp+0000000a0h], byte 0000000000000002bh
+%ffffffff966000eb 0f 85 43 09 00 00       jne +000000943h (0ffffffff96600a34h)
+%ffffffff966000f1 41 5f                   pop r15
+%ffffffff966000f3 41 5e                   pop r14
+%ffffffff966000f5 41 5d                   pop r13
+VBoxDbg> u ffffffff966000f5
+%ffffffff966000f5 41 5d                   pop r13
+%ffffffff966000f7 41 5c                   pop r12
+%ffffffff966000f9 5d                      pop rbp
+%ffffffff966000fa 5b                      pop rbx
+%ffffffff966000fb 5e                      pop rsi
+%ffffffff966000fc 41 5a                   pop r10
+%ffffffff966000fe 41 59                   pop r9
+%ffffffff96600100 41 58                   pop r8
+%ffffffff96600102 58                      pop rax
+%ffffffff96600103 5e                      pop rsi
+VBoxDbg> u ffffffff96600103
+%ffffffff96600103 5e                      pop rsi
+%ffffffff96600104 5a                      pop rdx
+%ffffffff96600105 5e                      pop rsi
+%ffffffff96600106 48 89 e7                mov rdi, rsp
+%ffffffff96600109 65 48 8b 24 25 04 60 00 00 mov rsp, qword [gs:00000000000006004h]
+%ffffffff96600112 ff 77 28                push qword [rdi+028h]
+%ffffffff96600115 ff 37                   push qword [rdi]
+%ffffffff96600117 50                      push rax
+%ffffffff96600118 66 90                   nop
+%ffffffff9660011a 0f 20 df                mov edi, cr3
+VBoxDbg> u ffffffff9660011a
+%ffffffff9660011a 0f 20 df                mov edi, cr3
+%ffffffff9660011d 66 90                   nop
+%ffffffff9660011f 48 89 f8                mov rax, rdi
+%ffffffff96600122 48 81 e7 ff 07 00 00    and rdi, 000000000000007ffh
+%ffffffff96600129 65 48 0f a3 3c 25 d6 a5 02 00 bt qword [gs:0000000000002a5d6h], rdi
+%ffffffff96600133 73 0f                   jnc +00fh (0ffffffff96600144h)
+%ffffffff96600135 65 48 0f b3 3c 25 d6 a5 02 00 btr qword [gs:0000000000002a5d6h], rdi
+%ffffffff9660013f 48 89 c7                mov rdi, rax
+%ffffffff96600142 eb 08                   jmp +008h (0ffffffff9660014ch)
+%ffffffff96600144 48 89 c7                mov rdi, rax
+VBoxDbg> u ffffffff96600144
+%ffffffff96600144 48 89 c7                mov rdi, rax
+%ffffffff96600147 48 0f ba ef 3f          bts rdi, 03fh
+%ffffffff9660014c 48 81 cf 00 08 00 00    or rdi, 00000000000000800h
+%ffffffff96600153 48 81 cf 00 10 00 00    or rdi, 00000000000001000h
+%ffffffff9660015a 0f 22 df                mov cr3, edi
+%ffffffff9660015d 58                      pop rax
+%ffffffff9660015e 5f                      pop rdi
+%ffffffff9660015f 5c                      pop rsp
+%ffffffff96600160 0f 01 f8                swapgs
+%ffffffff96600163 48 0f 07                sysret

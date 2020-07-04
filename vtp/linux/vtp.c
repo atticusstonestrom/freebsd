@@ -26,7 +26,12 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
+	"pushf;"
+	"cmp $83, %rax;"
+	"jne end;
 	"incl counter;"
+"end:;"
+	"popf;"
 	"jmp *(old_lstar);");
 extern void asm_hook(void);
 

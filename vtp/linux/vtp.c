@@ -28,7 +28,7 @@ __asm__(
 "asm_hook:;"
 	"pushf;"
 	"cmp $83, %rax;"
-	"jne end;
+	"jne end;"
 	"incl counter;"
 "end:;"
 	"popf;"

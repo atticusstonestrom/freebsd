@@ -14,6 +14,23 @@ MODULE_AUTHOR("Atticus Stonestrom");
 MODULE_DESCRIPTION("hooks mkdirat to give virtual to physical addressing");
 MODULE_VERSION("0.01");
 
+/////////////////////////////////////////////////////
+//virtual address masks
+//pg 2910 of intel developers' manual
+#define PML5_MASK(x)	((x)&0x01ff000000000000)	//bits 56 to 48
+#define PML4_MASK(x)	((x)&0x0000ff8000000000)	//bits 47 to 39
+#define PDPT_MASK(x)	((x)&0x0000007fc0000000)	//bits 38 to 30
+#define PD_MASK(x)	((x)&0x000000003fe00000)	//bits 29 to 21
+#define PT_MASK(x)	((x)&0x00000000001ff000)	//bits 20 to 12
+/////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+//page structure entry masks
+#define PE_ADDR_MASK(x)	((x)&0x000ffffffffff000)	//bits 51 to 12
+#define PE_PS_FLAG(x)	( (x) & ((long)1<<7) )		//page size flag
+#define PE_P_FLAG(x) 	((x)&1)				//present flag
+/////////////////////////////////////////////////////
+
 union __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		unsigned int eax;

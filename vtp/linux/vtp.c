@@ -68,7 +68,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 		: "=r"(cr3), "=r"(la57_flag)
 		::"rax", "ecx", "memory");
 	if(!cr3) {
-		return EOPNOTSUPP; }
+		return -EOPNOTSUPP; }
 	////////////////////////////////////////////////////////////////////
 	unsigned long psentry=0, paddr=0;
 	////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 			phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) );
 		printk("[debug]: pml5e:\t0x%lx\n", psentry);
 		if(!PE_P_FLAG(psentry)) {
-			return EFAULT; }}
+			return -EFAULT; }}
 	else {
 		psentry=cr3; }
 	////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 		phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) );
 	printk("[debug]: pml4e:\t0x%lx\n", psentry);
 	if(!PE_P_FLAG(psentry)) {
-		return EFAULT; }
+		return -EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pdpte
 	printk("[debug]: &pdpte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) ));
@@ -102,7 +102,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 		*to_fill=paddr;
 		return 0; }
 	if(!PE_P_FLAG(psentry)) {
-		return EFAULT; }
+		return -EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pde
 	printk("[debug]: &pde:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) ));
@@ -115,7 +115,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 		*to_fill=paddr;
 		return 0; }
 	if(!PE_P_FLAG(psentry)) {
-		return EFAULT; }
+		return -EFAULT; }
 	////////////////////////////////////////////////////////////////////
 	//pte
 	printk("[debug]: &pte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) ));

@@ -22,14 +22,27 @@ union __attribute__((packed)) {
 	old_lstar, new_lstar;
 
 int counter=0;
+void hook(void) {
+	counter++;
+	printk("[*] in the hook!\n");
+	return; }
 __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
 	"pushf;"
-	"cmp $83, %rax;"
+	//"cmp $83, %rax;"
+	"cmp $335, %rax;"
 	"jne end;"
-	"incl counter;"
+	"swapgs;"
+	"push %rcx;"
+	//"incl counter;"
+	"call hook;"
+	"pop %rcx;"
+	"popf;"
+	"swapgs;"
+	"mov $0, %rax;"
+	"sysretq;"
 "end:;"
 	"popf;"
 	"jmp *(old_lstar);");

@@ -1,4 +1,4 @@
-obj-m += idt_hook.o
+obj-m += idt.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

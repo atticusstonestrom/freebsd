@@ -77,7 +77,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 		printk("[debug]: &pml5e:\t%px\n", phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) ));
 		psentry=*(unsigned long *)\
 			phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) );
-		printk("[debug]: pml5e:\t\t%px\n", psentry);
+		printk("[debug]: pml5e:\t\t0x%lx\n", psentry);
 		if(!PE_P_FLAG(psentry)) {
 			return EFAULT; }}
 	else {
@@ -87,7 +87,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 	printk("[debug]: &pml4e:\t%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) ));
 	psentry=*(unsigned long *)\
 		phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) );
-	printk("[debug]: pml4e:\t\t%plx\n", psentry);
+	printk("[debug]: pml4e:\t\t0x%lx\n", psentry);
 	if(!PE_P_FLAG(psentry)) {
 		return EFAULT; }
 	////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 	printk("[debug]: &pdpte:\t%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) ));
 	psentry=*(unsigned long *)\
 		phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) );
-	printk("[debug]: pdpte:\t\t%px\n", psentry);
+	printk("[debug]: pdpte:\t\t0x%lx\n", psentry);
 	if(PE_PS_FLAG(psentry)) {	//1GB page
 		//bits (51 to 30) | bits (29 to 0)
 		paddr=(psentry&0x0ffffc00000000)|(vaddr&0x3fffffff);

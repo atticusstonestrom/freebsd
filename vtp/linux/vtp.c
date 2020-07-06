@@ -174,7 +174,7 @@ vtp_init(void) {
 
 static void __exit
 vtp_fini(void) {
-	__asm__ __volatile__("wrmsr"::"c"(0xc0000082), "a"(new_lstar.eax), "d"(new_lstar.edx));
+	__asm__ __volatile__("wrmsr"::"c"(0xc0000082), "a"(old_lstar.eax), "d"(old_lstar.edx));
 	return; }
 
 module_init(vtp_init);

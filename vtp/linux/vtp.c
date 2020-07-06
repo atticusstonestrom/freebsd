@@ -142,7 +142,6 @@ __asm__(
 	"pop %rcx;"
 	"popf;"
 	"swapgs;"
-	"mov $0, %rax;"
 	"sysretq;"
 "end:;"
 	"popf;"

@@ -37,6 +37,7 @@ MODULE_VERSION("0.01");
 
 
 /////////////////////////////////////////////////////
+__attribute__((__used__))
 unsigned long hook(unsigned long vaddr, unsigned long *to_fill) {
 	////////////////////////////////////////////////////////////////////
 	//asm block checks to see if 4 or 5-level paging is enabled

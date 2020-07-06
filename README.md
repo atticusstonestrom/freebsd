@@ -1,4 +1,4 @@
-# freebsd
+# x86-64
 (will contain) a number of small utilities (ie freebsd or linux lkms) for interacting with an intel x64 processor. eventual aim is to program a kernel fuzzer
 
 # vtp

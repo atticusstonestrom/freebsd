@@ -38,38 +38,60 @@ struct idtr_t {
 	idtr;
 
 int counter=0;
-/*__attribute__((__used__))
+__attribute__((__used__))
 static void
 hook(void) {
 	printk("in the hook! counter %d\n", ++counter);
-	return; }*/
+	return; }
 
 __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	/*"push %rax;"
+	"push %rdi;"
+	"mov %rsp, %rdi;"
+	"mov 32(%rsp), %rsp;"
+	"push %rdi;"
+	"push %rax;"
 	"push %rbx;"
 	"push %rcx;"
 	"push %rdx;"
 	"push %rbp;"
-	"push %rsi;
-	"push %rdi;"
-	"push %fs;"
-	"push %gs;"
+	"push %rsi;"
+	"push %r8;"
+	"push %r9;"
+	"push %r10;"
+	"push %r11;"
+	"push %r12;"
+	"push %r13;"
+	"push %r14;"
+	"push %r15;"
+	//"push %fs;"
+	//"push %gs;"
 	"pushf;"
+	"swapgs;"
 	"call hook;"
+	"swapgs;"
 	"popf;"
-	"pop %gs;"
-	"pop %fs;"
-	"pop %rdi;"
+	//"pop %gs;"
+	//"pop %fs;"
+	"pop %r15;"
+	"pop %r14;"
+	"pop %r13;"
+	"pop %r12;"
+	"pop %r11;"
+	"pop %r10;"
+	"pop %r9;"
+	"pop %r8;"
 	"pop %rsi;"
 	"pop %rbp;"
 	"pop %rdx;"
 	"pop %rcx;"
 	"pop %rbx;"
-	"pop %rax;"*/
-	"incl counter;"
+	"pop %rax;"
+	"pop %rdi;"
+	"mov %rdi, %rsp;"
+	"pop %rdi;"
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 
@@ -82,7 +104,7 @@ idt_init(void) {
 		"sti;"
 		:: "m"(idtr));
 	printk("[*]  idtr dump\n"
-	       "[**] address:\t%px\n"
+	       "[**] address:\t0x%px\n"
 	       "[**] lim val:\t0x%x\n"
 	       "[*]  end dump\n\n",
 	       idtr.addr, idtr.lim_val);
@@ -93,7 +115,7 @@ idt_init(void) {
 		| ((long)(zd_idte->offset_16_31)<<16)
 		| ((long)(zd_idte->offset_32_63)<<32);
 	printk("[*]  old idt entry %d:\n"
-	       "[**] addr:\t%px\n"
+	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
 	       "[**] ist:\t%d\n"
 	       "[**] type:\t%d\n"
@@ -118,7 +140,7 @@ idt_init(void) {
 	cr0 |= 0x10000;
 	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
 	printk("[*]  new idt entry %d:\n"
-	       "[**] addr:\t%px\n"
+	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
 	       "[**] ist:\t%d\n"
 	       "[**] type:\t%d\n"

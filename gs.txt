@@ -1,0 +1,37 @@
+https://i.blackhat.com/us-18/Wed-August-8/us-18-Mulasmajic-Peterson-Why-So-Spurious.pdf
+https://gist.github.com/Keno/0753fa1909fadb3b66af1ecb76801f03
+
+
+IA32_KERNEL_GS_BASE site:stackoverflow.com
+where is the kernel stack stored linux
+per_cpu macro
+linux kernel gs:0x6014
+https://www.kernel.org/doc/Documentation/x86/kernel-stacks
+https://www.felixcloutier.com/x86/swapgs
+
+
+kernel stack:
+https://stackoverflow.com/questions/12911841/kernel-stack-and-user-space-stack
+running out of stack space in an interrupt handler
+https://stackoverflow.com/questions/28759227/which-stack-is-used-by-interrupt-handler-linux
+
+
+https://stackoverflow.com/questions/9113310/segment-selector-in-ia-32
+tss x64 [how is stack for IRQ handler decided?]
+
+
+https://stackoverflow.com/questions/6611346/how-are-the-fs-gs-registers-used-in-linux-amd64
+https://reverseengineering.stackexchange.com/questions/2006/how-are-the-segment-registers-fs-gs-cs-ss-ds-es-used-in-linux
+
+
+______________________________________________
+https://www.kernel.org/doc/Documentation/admin-guide/hw-vuln/spectre.rst
+https://en.wikipedia.org/wiki/SWAPGS_(security_vulnerability)
+https://access.redhat.com/articles/4329821
+______________________________________________
+lfence
+https://stackoverflow.com/questions/20316124/does-it-make-any-sense-to-use-the-lfence-instruction-on-x86-x86-64-processors
+https://stackoverflow.com/questions/27595595/when-are-x86-lfence-sfence-and-mfence-instructions-required
+https://stackoverflow.com/questions/27627969/why-is-or-isnt-sfence-lfence-equivalent-to-mfence
+memory fence
+https://stackoverflow.com/questions/286629/what-is-a-memory-fence

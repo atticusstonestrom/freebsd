@@ -14,7 +14,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
 MODULE_DESCRIPTION("hooks mkdirat to give virtual to physical addressing");
 MODULE_VERSION("0.01");
-#define SC "335"	//eventually write a parser for the relevant file
+#define SC_NUM "335"	//eventually write a parser for the relevant file
 /////////////////////////////////////////////////////
 
 
@@ -136,7 +136,7 @@ __asm__(
 	".global asm_hook;"
 "asm_hook:;"
 	"pushf;"
-	"cmp $"SC", %rax;"
+	"cmp $"SC_NUM", %rax;"
 	"jne end;"
 	"swapgs;"
 	"push %rcx;"

@@ -41,7 +41,7 @@ int counter=0;
 __attribute__((__used__))
 static void
 hook(void) {
-	printk("in the hook! counter %d\n", ++counter);
+	printk("[*] in the hook! counter %d\n", ++counter);
 	return; }
 
 __asm__(

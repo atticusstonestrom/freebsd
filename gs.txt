@@ -5,7 +5,7 @@ https://gist.github.com/Keno/0753fa1909fadb3b66af1ecb76801f03
 IA32_KERNEL_GS_BASE site:stackoverflow.com
 where is the kernel stack stored linux
 per_cpu macro
-linux kernel gs:0x6014
+linux kernel gs:600c, gs:0x6014
 https://www.kernel.org/doc/Documentation/x86/kernel-stacks
 https://www.felixcloutier.com/x86/swapgs
 

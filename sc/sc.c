@@ -35,7 +35,7 @@ unsigned long hook(void) {
 	       "[**] lim val:\t0x%x\n"
 	       "[*]  end dump\n\n",
 	       gdtr.addr, gdtr.lim_val);
-	
+
 	//__asm__ __volatile__("str (tr)");
 	__asm__ __volatile__("str %0"::"m"(tr));
 	printk("[*] tr:\t0x%x\n\n", tr);
@@ -113,7 +113,6 @@ unsigned long hook(void) {
 		:"=a"(gs_base.eax), "=d"(gs_base.edx)
 		:"c"(0xc0000102));
 	printk("[*] ia32_kernel_gs_base:\t0x%lx\n\n", gs_base.val);
-	
 	
 	//*to_fill=paddr;
 	return 0; }

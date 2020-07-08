@@ -20,13 +20,20 @@ MODULE_VERSION("0.01");
 /////////////////////////////////////////////////////
 //need to be careful if there are so
 //many arguments that stack is required
-unsigned short tr;
+/*unsigned short tr;
 struct __attribute__((packed)) {
 	unsigned short lim_val;
 	void *addr; }	//make struct gdte_t
-	gdtr;
+	gdtr;*/
 __attribute__((__used__))
 unsigned long hook(void) {
+	struct __attribute__((packed)) {
+		unsigned short lim_val;
+		void *addr; }	//make struct gdte_t
+		gdtr={0};
+	unsigned short tr=0;
+	//printk("\n");
+
 	__asm__ __volatile__("sgdt %0"::"m"(gdtr));
 	printk("[*]  gdtr dump\n"
 	       "[**] address:\t0x%px\n"
@@ -35,6 +42,7 @@ unsigned long hook(void) {
 	       gdtr.addr, gdtr.lim_val);
 	
 	__asm__ __volatile__("str (tr)");
+	//__asm__ __volatile__("str %0"::"m"(tr));
 	printk("[*] tr:\t0x%x\n\n", tr);
 	
 	//vol 3a.7-5: pg 3035
@@ -55,7 +63,7 @@ unsigned long hook(void) {
 		unsigned int rsv; }
 		*tssd;
 	tssd=(void *)((unsigned long)gdtr.addr+tr);
-	
+
 	//vol 3a.7-19: pg3050
 	struct __attribute__((packed)) {
 		unsigned int rsv_0_3;

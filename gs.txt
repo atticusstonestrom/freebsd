@@ -4,7 +4,8 @@ https://gist.github.com/Keno/0753fa1909fadb3b66af1ecb76801f03
 
 IA32_KERNEL_GS_BASE site:stackoverflow.com
 where is the kernel stack stored linux
-per_cpu macro
+per_cpu_var(kernel_stack)
+per_cpu_var(cpu_tss+TSS_sp0)
 linux kernel gs:600c, gs:0x6014
 https://www.kernel.org/doc/Documentation/x86/kernel-stacks
 https://www.felixcloutier.com/x86/swapgs
@@ -23,12 +24,14 @@ tss x64 [how is stack for IRQ handler decided?]
 https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64
 https://stackoverflow.com/questions/6611346/how-are-the-fs-gs-registers-used-in-linux-amd64
 https://reverseengineering.stackexchange.com/questions/2006/how-are-the-segment-registers-fs-gs-cs-ss-ds-es-used-in-linux
-
+______________________________________________
+https://stackoverflow.com/questions/40653480/x86-x64-modifying-tss-fields
 
 ______________________________________________
 https://www.kernel.org/doc/Documentation/admin-guide/hw-vuln/spectre.rst
 https://en.wikipedia.org/wiki/SWAPGS_(security_vulnerability)
 https://access.redhat.com/articles/4329821
+https://businessresources.bitdefender.com/hubfs/noindex/Bitdefender-WhitePaper-INTEL-CPUs.pdf
 ______________________________________________
 lfence
 https://stackoverflow.com/questions/20316124/does-it-make-any-sense-to-use-the-lfence-instruction-on-x86-x86-64-processors

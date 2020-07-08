@@ -92,7 +92,7 @@ unsigned long hook(void) {
 	       (unsigned long)tss, tssd->seg_lim_0_15|(tssd->seg_lim_16_19<<16), 
 	       tssd->type, tssd->dpl, tssd->p, tssd->avl, tssd->granularity);
 	printk("[*] rsp1:\t0x%lx\n"
-	       "[*] rsp2:\t0x%lx\n",
+	       "[*] rsp2:\t0x%lx\n\n",
 	       tss->rsp1, tss->rsp2);
 	
 	union __attribute__((packed)) {
@@ -109,7 +109,7 @@ unsigned long hook(void) {
 		"swapgs;"
 		:"=a"(gs_base.eax), "=d"(gs_base.edx)
 		:"c"(0xc0000102));
-	printk("[*] ia32_kernel_gs_base:\t0x%lx\n", gs_base.val);
+	printk("[*] ia32_kernel_gs_base:\t0x%lx\n\n", gs_base.val);
 	
 	
 	//*to_fill=paddr;

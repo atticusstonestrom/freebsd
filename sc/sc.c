@@ -20,11 +20,6 @@ MODULE_VERSION("0.01");
 /////////////////////////////////////////////////////
 //need to be careful if there are so
 //many arguments that stack is required
-/*unsigned short tr;
-struct __attribute__((packed)) {
-	unsigned short lim_val;
-	void *addr; }	//make struct gdte_t
-	gdtr;*/
 __attribute__((__used__))
 unsigned long hook(void) {
 	struct __attribute__((packed)) {

@@ -20,6 +20,7 @@ https://stackoverflow.com/questions/9113310/segment-selector-in-ia-32
 tss x64 [how is stack for IRQ handler decided?]
 
 
+https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64
 https://stackoverflow.com/questions/6611346/how-are-the-fs-gs-registers-used-in-linux-amd64
 https://reverseengineering.stackexchange.com/questions/2006/how-are-the-segment-registers-fs-gs-cs-ss-ds-es-used-in-linux
 

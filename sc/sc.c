@@ -20,8 +20,81 @@ MODULE_VERSION("0.01");
 /////////////////////////////////////////////////////
 //need to be careful if there are so
 //many arguments that stack is required
+unsigned short tr;
+struct __attribute__((packed)) {
+	unsigned short lim_val;
+	void *addr; }	//make struct gdte_t
+	gdtr;
 __attribute__((__used__))
 unsigned long hook(void) {
+	__asm__ __volatile__("sgdt %0"::"m"(gdtr));
+	printk("[*]  gdtr dump\n"
+	       "[**] address:\t0x%px\n"
+	       "[**] lim val:\t0x%x\n"
+	       "[*]  end dump\n\n",
+	       gdtr.addr, gdtr.lim_val);
+	
+	__asm__ __volatile__("str (tr)");
+	printk("[*] tr:\t0x%x\n\n", tr);
+	
+	//vol 3a.7-5: pg 3035
+	struct __attribute__((packed)) {
+		unsigned short seg_lim_0_15;
+		unsigned short base_addr_0_15;
+		unsigned char base_addr_16_23;		//interrupt stack table
+		unsigned char type:4;
+		unsigned char zero_12:1;
+		unsigned char dpl:2;			//descriptor privilege level
+		unsigned char p:1;			//present flag
+		unsigned char seg_lim_16_19:4;
+		unsigned char avl:1;			//available for use
+		unsigned char zero_20_21:2;
+		unsigned char granularity:1;
+		unsigned char base_addr_24_31;
+		unsigned int base_addr_32_63;
+		unsigned int rsv; }
+		*tssd;
+	tssd=(void *)((unsigned long)gdtr.addr+tr);
+	
+	//vol 3a.7-19: pg3050
+	struct __attribute__((packed)) {
+		unsigned int rsv_0_3;
+		unsigned long rsp0;
+		unsigned long rsp1;
+		unsigned long rsp2;
+		unsigned long rsv_28_35;
+		unsigned long ist1;
+		unsigned long ist2;
+		unsigned long ist3;
+		unsigned long ist4;
+		unsigned long ist5;
+		unsigned long ist6;
+		unsigned long ist7;
+		unsigned long rsv_92_99;
+		unsigned short rsv_100_101;
+		unsigned short io_map_base_addr; }
+		*tss;
+
+	tss=(void *)(0
+		| ((long)(tssd->base_addr_0_15))
+		| ((long)(tssd->base_addr_16_23)<<16)
+		| ((long)(tssd->base_addr_24_31)<<24)
+		| ((long)(tssd->base_addr_32_63)<<32));
+	printk("[*]  tss descriptor:\n"
+	       "[**] addr:\t0x%lx\n"
+	       "[**] seg limit:\t0x%x\n"
+	       "[**] type:\t%d\n"
+	       "[**] dpl:\t%d\n"
+	       "[**] p:\t\t%d\n"
+	       "[**] avl:\t%d\n"
+	       "[**] granular:\t%d\n"
+	       "[*]  end dump\n\n",
+	       (unsigned long)tss, tssd->seg_lim_0_15|(tssd->seg_lim_16_19<<16), 
+	       tssd->type, tssd->dpl, tssd->p, tssd->avl, tssd->granularity);
+	printk("[*] rsp1:\t0x%lx\n"
+	       "[*] rsp2:\t0x%lx\n",
+	       tss->rsp1, tss->rsp2);
+	
 	union __attribute__((packed)) {
 		struct __attribute__((packed)) {
 			unsigned int eax;
@@ -37,6 +110,8 @@ unsigned long hook(void) {
 		:"=a"(gs_base.eax), "=d"(gs_base.edx)
 		:"c"(0xc0000102));
 	printk("[*] ia32_kernel_gs_base:\t0x%lx\n", gs_base.val);
+	
+	
 	//*to_fill=paddr;
 	return 0; }
 /////////////////////////////////////////////////////
@@ -52,7 +127,7 @@ __asm__(
 	"jne end;"
 	"swapgs;"
 	"push %rcx;"
-	"call hook;"
+	"call hook;"	//should move current %rsp to tss->rsp2
 	"pop %rcx;"
 	"popf;"
 	"swapgs;"

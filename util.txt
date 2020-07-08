@@ -4,7 +4,7 @@ https://www.virtualbox.org/manual/ch12.html#ts_debugger
 
 https://gist.github.com/zg/38a3afa112ddf7de4912aafc249ec82f
 https://graspingtech.com/ubuntu-desktop-18.04-virtual-machine-macos-qemu/
-qemu-system-x86_64 -drive file=./ubuntu.qcow2 -boot d  -m 2048 [-s -S]
+qemu-system-x86_64 -drive file=./ubuntu.qcow2 -boot d  -m 2048 [-s -S]      //-accel hvf//THIS CAUSES SWAP OUT
 https://www.unixmen.com/how-to-install-and-configure-qemu-in-ubuntu/
 https://en.wikibooks.org/wiki/QEMU/Debugging_with_QEMU
 https://wiki.osdev.org/Kernel_Debugging#Use_GDB_with_QEMU

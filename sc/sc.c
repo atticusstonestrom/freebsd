@@ -32,7 +32,7 @@ unsigned long hook(void) {
 		void *addr; }	//make struct gdte_t
 		gdtr={0};
 	unsigned short tr=0;
-	//printk("\n");
+	printk("\n");		//why is this necessary :(
 
 	__asm__ __volatile__("sgdt %0"::"m"(gdtr));
 	printk("[*]  gdtr dump\n"
@@ -41,8 +41,8 @@ unsigned long hook(void) {
 	       "[*]  end dump\n\n",
 	       gdtr.addr, gdtr.lim_val);
 	
-	__asm__ __volatile__("str (tr)");
-	//__asm__ __volatile__("str %0"::"m"(tr));
+	//__asm__ __volatile__("str (tr)");
+	__asm__ __volatile__("str %0"::"m"(tr));
 	printk("[*] tr:\t0x%x\n\n", tr);
 	
 	//vol 3a.7-5: pg 3035

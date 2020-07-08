@@ -22,6 +22,8 @@ MODULE_VERSION("0.01");
 //many arguments that stack is required
 __attribute__((__used__))
 unsigned long hook(void) {
+	//check if previous rsp was kernel mode or user mode (&0xfff0000000000000?)
+	//replace tss->rs2 with previous rsp?
 	struct __attribute__((packed)) {
 		unsigned short lim_val;
 		void *addr; }	//make struct gdte_t

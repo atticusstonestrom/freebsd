@@ -154,20 +154,74 @@ struct tss_t *get_tss(void) {
 /////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////
-//virtual address masks
-//pg 2910 of intel developers' manual
-#define PML5_MASK(x)	((x)&0x01ff000000000000)	//bits 56 to 48
-#define PML4_MASK(x)	((x)&0x0000ff8000000000)	//bits 47 to 39
-#define PDPT_MASK(x)	((x)&0x0000007fc0000000)	//bits 38 to 30
-#define PD_MASK(x)	((x)&0x000000003fe00000)	//bits 29 to 21
-#define PT_MASK(x)	((x)&0x00000000001ff000)	//bits 20 to 12
-/////////////////////////////////////////////////////
-//page structure entry masks
-#define PE_ADDR_MASK(x)	((x)&0x000ffffffffff000)	//bits 51 to 12
-#define PE_PS_FLAG(x)	( (x) & ((long)1<<7) )		//page size flag
-#define PE_P_FLAG(x) 	((x)&1)				//present flag
-/////////////////////////////////////////////////////
+//pg 2910
+union pse_t {
+	struct __attribute__((packed)) {
+		unsigned char p:1;
+		unsigned char rw:1;
+		unsigned char us:1;
+		unsigned char pwt:1;
+		unsigned char pcd:1;
+		unsigned char accessed:1;
+		union __attribute__((packed)) {
+			struct __attribute__((packed)) {
+				unsigned char dirty:1;
+				unsigned char page_size:1;
+				unsigned char global:1; };
+			unsigned char rsv_6_8:3; };
+		unsigned char rsv_9_11:3;
+		union __attribute__((packed)) {
+			unsigned long addr_pse:40;		//bits 12 to 51
+			struct __attribute__((packed)) {
+				unsigned char pat:1;
+				unsigned int rsv_13_29:17;
+				unsigned int addr_1gb:22; };	//bits 30 to 51
+			struct __attribute__((packed)) {
+				unsigned char pat:1;
+				unsigned char rsv_13_20:8;
+				unsigned int addr_2mb:31; };	//bits 21 to 51
+			unsigned long addr_4kb:40; };		//bits 12 to 51
+		union __attribute__((packed)) {
+			struct __attribute__((packed)) {
+				unsigned char rsv_52_58:7;
+				unsigned char prot_key:4; };
+			unsigned short rsv_52_62:11; };
+		unsigned char nx:1; };
+	unsigned long val; }
+	__attribute__((packed));
+
+union vaddr_t {
+	struct vaddr_pse {
+		unsigned short offset:12;
+		unsigned short pt_bits:9;
+		unsigned short pd_bits:9;
+		unsigned short pdpt_bits:9;
+		unsigned short pml4_bits:9;
+		unsigned short pml5_bits:9;
+		unsigned char rsv_57_63:7; }
+		__attribute__((packed));
+	struct vaddr_4kb {
+		unsigned int offset:30;
+		unsigned long rsv_30_63:34; }
+		__attribute__((packed));
+	struct vaddr_2mb {
+		unsigned int offset:21;
+		unsigned long rsv_21_63:43; }
+		__attribute__((packed));
+	struct vaddr_4kb {
+		unsigned short offset:12;
+		unsigned long rsv_12_63:52; }
+		__attribute__((packed));
+	unsigned long val; }
+	__attribute__((packed));
+
+struct vtp_t {
+	union pse_t *pml5e_p;
+	union pse_t *pml4e_p;
+	union pse_t *pdpte_p;
+	union pse_t *pde_p;
+	union pse_t *pte_p; };
+
 __attribute__((__always_inline__)) unsigned int
 vtp(unsigned long vaddr, unsigned long *to_fill) {
 

@@ -14,19 +14,17 @@
 /////////////////////////////////////////////////////
 #define DISABLE_RW_PROTECTION			\
 __asm__ __volatile__(				\
-	"push %rax;"				\
 	"mov %cr0, %rax;"			\
 	"and $0xfffffffffffeffff, %rax;"	\
 	"mov %rax, %cr0;"			\
-	"pop %rax;");				
+	:::"rax");				
 
 #define ENABLE_RW_PROTECTION \
 __asm__ __volatile__(				\
-	"push %rax;"				\
 	"mov %cr0, %rax;"			\
 	"or $0x10000, %rax;"			\
 	"mov %rax, %cr0;"			\
-	"pop %rax;");
+	:::"rax");
 /////////////////////////////////////////////////////
 
 
@@ -72,14 +70,16 @@ __asm__ __volatile__(	\
 	"cli;"		\
 	"sidt %0;"	\
 	"sti;"		\
-	:: "m"(dst));
+	:: "m"(dst)	\
+	: "memory");
 
 #define WRITE_IDT(src)	\
 __asm__ __volatile__(	\
 	"cli;"		\
 	"lidt %0;"	\
 	"sti;"		\
-	:: "m"(src));
+	:: "m"(src)	\
+	: "memory");
 /////////////////////////////////////////////////////
 
 
@@ -191,13 +191,13 @@ vtp(unsigned long vaddr, unsigned long *to_fill) {
 		"mov %%cr4, %%rax;"
 		"shr $20, %%rax;"
 		"and $1, %%rax;"
-		"mov %%eax, %1;"
+		"mov %%al, %1;"
 		"jmp break;"
 	"fail:\n"
-		"mov $0, %0;"
+		"movl $0, %0;"
 	"break:\n"
 	
-		: "=m"(cr3), "=m"(la57_flag)
+		: "=r"(cr3), "=r"(la57_flag)
 		::"rax", "ecx", "memory");
 	if(!cr3) {
 		return -EOPNOTSUPP; }

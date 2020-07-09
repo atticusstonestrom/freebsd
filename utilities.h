@@ -218,7 +218,7 @@ struct vtp_t {
 	union pse_t *pde_p;
 	union pse_t *pte_p; };
 
-__attribute__((__always_inline__)) unsigned int
+unsigned int
 vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	//asm block checks to see if 4 or 5-level paging is enabled
 	//if so, moves the cr3 register into the cr3 variable

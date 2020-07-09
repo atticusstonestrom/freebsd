@@ -15,27 +15,11 @@ MODULE_DESCRIPTION("Hooks the zero divisor IDT entry");
 MODULE_VERSION("0.01");
 
 
-struct idte_t {
-	unsigned short offset_0_15;
-	unsigned short segment_selector;
-	unsigned char ist;			//interrupt stack table
-	unsigned char type:4;
-	unsigned char zero_12:1;
-	unsigned char dpl:2;			//descriptor privilege level
-	unsigned char p:1;			//present flag
-	unsigned short offset_16_31;
-	unsigned int offset_32_63;
-	unsigned int rsv; }
-	__attribute__((packed))
-	*zd_idte;
+struct idte_t *zd_idte;
 
 #define ZD_INT 0x00
 unsigned long idte_offset;			//contains absolute address of original interrupt handler
-struct idtr_t {
-	unsigned short lim_val;
-	struct idte_t *addr; }
-	__attribute__((packed))
-	idtr;
+struct idtr_t idtr;
 
 int counter=0;
 __asm__(
@@ -46,27 +30,9 @@ __asm__(
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 
-/////////////////////////////////////////////////////
-//virtual address masks
-//pg 2910 of intel developers' manual
-#define PML5_MASK(x)	((x)&0x01ff000000000000)	//bits 56 to 48
-#define PML4_MASK(x)	((x)&0x0000ff8000000000)	//bits 47 to 39
-#define PDPT_MASK(x)	((x)&0x0000007fc0000000)	//bits 38 to 30
-#define PD_MASK(x)	((x)&0x000000003fe00000)	//bits 29 to 21
-#define PT_MASK(x)	((x)&0x00000000001ff000)	//bits 20 to 12
-/////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////
-//page structure entry masks
-#define PE_ADDR_MASK(x)	((x)&0x000ffffffffff000)	//bits 51 to 12
-#define PE_PS_FLAG(x)	( (x) & ((long)1<<7) )		//page size flag
-#define PE_P_FLAG(x) 	((x)&1)				//present flag
-/////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////
-unsigned long vtp(unsigned long vaddr, unsigned long *to_fill) {
+unsigned long print_vtp(unsigned long vaddr, unsigned long *to_fill) {
 	////////////////////////////////////////////////////////////////////
 	//asm block checks to see if 4 or 5-level paging is enabled
 	//if so, moves the cr3 register into the cr3 variable
@@ -159,11 +125,7 @@ unsigned long vtp(unsigned long vaddr, unsigned long *to_fill) {
 
 static int __init
 idt_init(void) {
-	__asm__ __volatile__ (
-		"cli;"
-		"sidt %0;"
-		"sti;"
-		:: "m"(idtr));
+	READ_IDT(idtr)
 	printk("[*]  idtr dump\n"
 	       "[**] address:\t0x%px\n"
 	       "[**] lim val:\t0x%x\n"
@@ -189,17 +151,13 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
+	DISABLE_RW_PROTECTION
+	__asm__ __volatile__("cli":::"memory");
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	__asm__ __volatile__("sti":::"memory");
+	ENABLE_RW_PROTECTION
 	printk("[*]  new idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
@@ -214,55 +172,37 @@ idt_init(void) {
 	       
 	unsigned long paddr;
 	printk("[*] asm_hook: 0x%px\n", &asm_hook);
-	if(vtp((unsigned long)&asm_hook, &paddr)) {
+	if(print_vtp((unsigned long)&asm_hook, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 	
 	printk("[*] offset: 0x%lx\n", idte_offset);
-	if(vtp(idte_offset, &paddr)) {
+	if(print_vtp(idte_offset, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 		
-	union __attribute__((packed)) {
-		struct __attribute__((packed)) {
-			unsigned int eax;
-			unsigned int edx; };
-		unsigned long val; }
-		ia32_lstar;
-	__asm__ __volatile__("rdmsr":"=a"(ia32_lstar.eax), "=d"(ia32_lstar.edx):"c"(0xc0000082));
+	union msr_t ia32_lstar;
+	READ_MSR(ia32_lstar, 0xc0000082)
 	printk("[*] ia32_lstar:\t0x%lx", ia32_lstar.val);
-	if(vtp(ia32_lstar.val, &paddr)) {
+	if(print_vtp(ia32_lstar.val, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
-	
-	
-	//uprintf("%p\n", &asm_hook);
-	/*unsigned short cs;
-	__asm__ __volatile__("mov %%cs, %0" : "=r"(cs));
-	uprintf("cs: 0x%x\n", cs);
-	for(int i=0; i<64; i++) {
-		uprintf("idt entry %d:\t%p\n", i,
-			(void *)((long)idtr.addr[i].offset_0_15|((long)idtr.addr[i].offset_16_31<<16)|((long)idtr.addr[i].offset_32_63<<32))); }*/
 
 	return 0; }
 
 static void __exit
 idt_fini(void) {
 	printk("[*] counter: %d\n\n", counter);
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
+	DISABLE_RW_PROTECTION
+	__asm__ __volatile__("cli":::"memory");
 	zd_idte->offset_0_15=idte_offset&0xffff;
 	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
 	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0)); }
+	__asm__ __volatile__("sti":::"memory");
+	ENABLE_RW_PROTECTION }
 
 module_init(idt_init);
 module_exit(idt_fini);

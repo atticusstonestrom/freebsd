@@ -8,6 +8,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <asm/io.h>
+#include "utilities.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
@@ -15,19 +16,7 @@ MODULE_DESCRIPTION("Hooks the zero divisor IDT entry");
 MODULE_VERSION("0.01");
 
 
-struct idte_t {
-	unsigned short offset_0_15;
-	unsigned short segment_selector;
-	unsigned char ist;			//interrupt stack table
-	unsigned char type:4;
-	unsigned char zero_12:1;
-	unsigned char dpl:2;			//descriptor privilege level
-	unsigned char p:1;			//present flag
-	unsigned short offset_16_31;
-	unsigned int offset_32_63;
-	unsigned int rsv; }
-	__attribute__((packed))
-	*zd_idte;
+struct idte_t *zd_idte;
 
 #define ZD_INT 0x00
 unsigned long idte_offset;			//contains absolute address of original interrupt handler
@@ -47,45 +36,10 @@ __asm__(
 	"push %rdi;"
 	"mov %rsp, %rdi;"
 	"mov 32(%rsp), %rsp;"
-	"push %rdi;"
-	"push %rax;"
-	"push %rbx;"
-	"push %rcx;"
-	"push %rdx;"
-	"push %rbp;"
-	"push %rsi;"
-	"push %r8;"
-	"push %r9;"
-	"push %r10;"
-	"push %r11;"
-	"push %r12;"
-	"push %r13;"
-	"push %r14;"
-	"push %r15;"
-	//"push %fs;"
-	//"push %gs;"
-	"pushf;"
-	"swapgs;"
+	PUSHA
 	"call hook;"
 	"swapgs;"
-	"popf;"
-	//"pop %gs;"
-	//"pop %fs;"
-	"pop %r15;"
-	"pop %r14;"
-	"pop %r13;"
-	"pop %r12;"
-	"pop %r11;"
-	"pop %r10;"
-	"pop %r9;"
-	"pop %r8;"
-	"pop %rsi;"
-	"pop %rbp;"
-	"pop %rdx;"
-	"pop %rcx;"
-	"pop %rbx;"
-	"pop %rax;"
-	"pop %rdi;"
+	POPA
 	"mov %rdi, %rsp;"
 	"pop %rdi;"
 	"jmp *(idte_offset);");
@@ -94,11 +48,7 @@ extern void asm_hook(void);
 
 static int __init
 idt_init(void) {
-	__asm__ __volatile__ (
-		"cli;"
-		"sidt %0;"
-		"sti;"
-		:: "m"(idtr));
+	READ_IDT(idtr);
 	printk("[*]  idtr dump\n"
 	       "[**] address:\t0x%px\n"
 	       "[**] lim val:\t0x%x\n"
@@ -124,17 +74,13 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
+	DISABLE_RW_PROTECTION
+	__asm__ __volatile__("cli":::"memory");
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
+	__asm__ __volatile__("sti":::"memory");
+	ENABLE_RW_PROTECTION
 	printk("[*]  new idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
@@ -160,17 +106,13 @@ idt_init(void) {
 static void __exit
 idt_fini(void) {
 	printk("[*] counter: %d\n\n", counter);
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
+	DISABLE_RW_PROTECTION
+	__asm__ __volatile__("cli":::"memory");
 	zd_idte->offset_0_15=idte_offset&0xffff;
 	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
 	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0)); }
+	__asm__ __volatile__("sti":::"memory");
+	ENABLE_RW_PROTECTION }
 
 module_init(idt_init);
 module_exit(idt_fini);

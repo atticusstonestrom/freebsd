@@ -10,6 +10,7 @@
 // struct gdte_t?
 // syscall prologue
 // irq stack
+// constrain eax and edx in READ_MSR?
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
@@ -216,7 +217,7 @@ struct vtp_t {
 
 unsigned int
 vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
-	printk("\n");
+	//printk("\n");
 	//asm block checks to see if 4 or 5-level paging is enabled
 	//if so, moves the cr3 register into the cr3 variable
 	//and sets la57_flag to assert whether 4-level or 5-level
@@ -244,7 +245,7 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	"break:\n"
 	
 		: "=r"(cr3.val), "=r"(la57_flag)
-		::"rax", "ecx", "memory");
+		::"rax", "ecx", "edx", "memory");
 	if(!cr3.val) {
 		return -EOPNOTSUPP; }
 

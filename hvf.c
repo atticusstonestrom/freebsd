@@ -164,6 +164,7 @@ idt_init(void) {
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 
+	//printk("[DEBUG]: vtp_s @ 0x%px\n", &vtp_s);
 	if(vtp(idte_offset, &paddr, &vtp_s)) {
 		printk("[*] error\n\n"); }
 	else {

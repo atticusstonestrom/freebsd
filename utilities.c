@@ -14,16 +14,16 @@
 /////////////////////////////////////////////////////
 #define DISABLE_RW_PROTECTION			\
 __asm__ __volatile__(				\
-	"mov %cr0, %rax;"			\
-	"and $0xfffffffffffeffff, %rax;"	\
-	"mov %rax, %cr0;"			\
+	"mov %%cr0, %%rax;"			\
+	"and $0xfffffffffffeffff, %%rax;"	\
+	"mov %%rax, %%cr0;"			\
 	:::"rax");				
 
 #define ENABLE_RW_PROTECTION \
 __asm__ __volatile__(				\
-	"mov %cr0, %rax;"			\
-	"or $0x10000, %rax;"			\
-	"mov %rax, %cr0;"			\
+	"mov %%cr0, %%rax;"			\
+	"or $0x10000, %%rax;"			\
+	"mov %%rax, %%cr0;"			\
 	:::"rax");
 /////////////////////////////////////////////////////
 
@@ -141,10 +141,10 @@ struct tss_t {
 
 __attribute__((__always_inline__))
 struct tss_t *get_tss(void) {
-	struct gdtr_t gdtr;
-	unsigned short tr;
-	__asm__ __volatile__("sgdt %0"::"m"(gdtr));
-	__asm__ __volatile__("str %0"::"m"(tr));
+	struct gdtr_t gdtr={0};
+	unsigned short tr=0;
+	__asm__ __volatile__("sgdt %0"::"m"(gdtr):"memory");
+	__asm__ __volatile__("str %0"::"m"(tr):"memory");
 	struct tssd_t *tssd=(void *)((unsigned long)gdtr.addr+tr);
 	return (struct tss_t *)(0
 		| ((long)(tssd->base_addr_0_15))
@@ -191,10 +191,10 @@ vtp(unsigned long vaddr, unsigned long *to_fill) {
 		"mov %%cr4, %%rax;"
 		"shr $20, %%rax;"
 		"and $1, %%rax;"
-		"mov %%al, %1;"
+		"mov %%eax, %1;"
 		"jmp break;"
 	"fail:\n"
-		"movl $0, %0;"
+		"mov $0, %0;"
 	"break:\n"
 	
 		: "=r"(cr3), "=r"(la57_flag)

@@ -67,7 +67,7 @@ struct idtr_t {
 	struct idte_t *addr; }
 	__attribute__((packed));
 
-#define LOAD_IDT(dst)	\
+#define READ_IDT(dst)	\
 __asm__ __volatile__(	\
 	"cli;"		\
 	"sidt %0;"	\

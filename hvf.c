@@ -9,6 +9,7 @@
 #include <linux/kernel.h>
 #include <asm/io.h>
 #include "utilities.h"
+#include "utilities-backup.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
@@ -150,25 +151,42 @@ idt_init(void) {
 	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	       
 	unsigned long paddr;
-	printk("[*] asm_hook: 0x%px\n", &asm_hook);
+	struct vtp_t vtp_s;
+	/*printk("[*] asm_hook: 0x%px\n", &asm_hook);
 	if(print_vtp((unsigned long)&asm_hook, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
-		printk("[*] paddr: 0x%lx\n\n", paddr); }
+		printk("[*] paddr: 0x%lx\n\n", paddr); }*/
 	
 	printk("[*] offset: 0x%lx\n", idte_offset);
 	if(print_vtp(idte_offset, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
+
+	if(vtp(idte_offset, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] offset: 0x%lx\n", idte_offset);
+		printk("[debug]: &pml5e:\t0x%px\n", vtp_s.pml5e_p);
+		printk("[debug]: pml5e:\t0x%lx\n", *(unsigned long *)vtp_s.pml5e_p);
+		printk("[debug]: &pml4e:\t0x%px\n", vtp_s.pml4e_p);
+		printk("[debug]: pml4e:\t0x%lx\n", *(unsigned long *)vtp_s.pml4e_p);
+		printk("[debug]: &pdpte:\t0x%px\n", vtp_s.pdpte_p);
+		printk("[debug]: pdpte:\t0x%lx\n", *(unsigned long *)vtp_s.pdpte_p);
+		printk("[debug]: &pde:\t0x%px\n", vtp_s.pde_p);
+		printk("[debug]: pde:\t0x%lx\n", *(unsigned long *)vtp_s.pde_p);
+		printk("[debug]: &pte:\t0x%px\n", vtp_s.pte_p);
+		printk("[debug]: pte:\t0x%lx\n", *(unsigned long *)vtp_s.pte_p);
+		printk("[*] paddr: 0x%lx\n\n", paddr); }
 		
-	union msr_t ia32_lstar;
+	/*union msr_t ia32_lstar;
 	READ_MSR(ia32_lstar, 0xc0000082)
 	printk("[*] ia32_lstar:\t0x%lx", ia32_lstar.val);
 	if(print_vtp(ia32_lstar.val, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
-		printk("[*] paddr: 0x%lx\n\n", paddr); }
+		printk("[*] paddr: 0x%lx\n\n", paddr); }*/
 
 	return 0; }
 

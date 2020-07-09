@@ -15,6 +15,35 @@ MODULE_AUTHOR("Atticus Stonestrom");
 MODULE_DESCRIPTION("hooks mkdirat to give virtual to physical addressing");
 MODULE_VERSION("0.01");
 
+static void print_vtp(struct vtp_t *vtp_p) {
+	if(vtp_p->pml5e_p) {
+		printk("[debug]: &pml5e:\t0x%px\n", vtp_p->pml5e_p);
+		printk("[debug]: pml5e:\t0x%lx\n", *(unsigned long *)(vtp_p->pml5e_p)); }
+	if(vtp_p->pml4e_p) {
+		printk("[debug]: &pml4e:\t0x%px\n", vtp_p->pml4e_p);
+		printk("[debug]: pml4e:\t0x%lx\n", *(unsigned long *)(vtp_p->pml4e_p)); }
+	if(vtp_p->pdpte_p) {
+		printk("[debug]: &pdpte:\t0x%px\n", vtp_p->pdpte_p);
+		printk("[debug]: pdpte:\t0x%lx\n", *(unsigned long *)(vtp_p->pdpte_p)); }
+	if(vtp_p->pde_p) {
+		printk("[debug]: &pde:\t0x%px\n", vtp_p->pde_p);
+		printk("[debug]: pde:\t0x%lx\n", *(unsigned long *)(vtp_p->pde_p)); }
+	if(vtp_p->pte_p) {
+		printk("[debug]: &pte:\t0x%px\n", vtp_p->pte_p);
+		printk("[debug]: pte:\t0x%lx\n", *(unsigned long *)(vtp_p->pte_p)); }
+	return; }
+
+unsigned int hook(unsigned long vaddr, unsigned long *to_fill, struct vtp_t *vtp_p) {
+	int ret=0;
+	struct vtp_t kernel_vtp;
+	if(vtp_p==NULL) {
+		vtp_p=&kernel_vtp; }
+	*vtp_p=(struct vtp_t){0};
+	if(ret=vtp(vaddr, to_fill, vtp_p)) {
+		return ret; }
+	print_vtp(vtp_p);
+	return 0; }
+
 __asm__(
 	".text;"
 	".global asm_hook;"
@@ -24,7 +53,7 @@ __asm__(
 	"jne end;"
 	"swapgs;"
 	"push %rcx;"
-	"call vtp;"
+	"call hook;"
 	"pop %rcx;"
 	"popf;"
 	"swapgs;"
@@ -33,8 +62,6 @@ __asm__(
 	"popf;"
 	"jmp *(old_lstar);");
 extern void asm_hook(void);
-
-
 
 union msr_t old_lstar, new_lstar;
 

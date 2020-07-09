@@ -164,22 +164,27 @@ idt_init(void) {
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 
-	//if(vtp(idte_offset, &paddr, &vtp_s)) {
-		printk("[*] %d\n", vtp(idte_offset, &paddr, &vtp_s));
-		//printk("[*] error\n\n"); }
-	//else {
+	if(vtp(idte_offset, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("\n");
 		printk("[*] offset: 0x%lx\n", idte_offset);
-		printk("[debug]: &pml5e:\t0x%px\n", vtp_s.pml5e_p);
-		//printk("[debug]: pml5e:\t0x%lx\n", *(unsigned long *)vtp_s.pml5e_p);
-		printk("[debug]: &pml4e:\t0x%px\n", vtp_s.pml4e_p);
-		//printk("[debug]: pml4e:\t0x%lx\n", *(unsigned long *)vtp_s.pml4e_p);
-		printk("[debug]: &pdpte:\t0x%px\n", vtp_s.pdpte_p);
-		//printk("[debug]: pdpte:\t0x%lx\n", *(unsigned long *)vtp_s.pdpte_p);
-		printk("[debug]: &pde:\t0x%px\n", vtp_s.pde_p);
-		//printk("[debug]: pde:\t0x%lx\n", *(unsigned long *)vtp_s.pde_p);
-		printk("[debug]: &pte:\t0x%px\n", vtp_s.pte_p);
-		//printk("[debug]: pte:\t0x%lx\n", *(unsigned long *)vtp_s.pte_p);
-		printk("[*] paddr: 0x%lx\n\n", paddr); //}
+		if(vtp_s.pml5e_p) {
+			printk("[debug]: &pml5e:\t0x%px\n", vtp_s.pml5e_p);
+			/*printk("[debug]: pml5e:\t0x%lx\n", *(unsigned long *)vtp_s.pml5e_p);*/ }
+		if(vtp_s.pml4e_p) {
+			printk("[debug]: &pml4e:\t0x%px\n", vtp_s.pml4e_p);
+			/*printk("[debug]: pml4e:\t0x%lx\n", *(unsigned long *)vtp_s.pml4e_p);*/ }
+		if(vtp_s.pdpte_p) {
+			printk("[debug]: &pdpte:\t0x%px\n", vtp_s.pdpte_p);
+			/*printk("[debug]: pdpte:\t0x%lx\n", *(unsigned long *)vtp_s.pdpte_p);*/ }
+		if(vtp_s.pde_p) {
+			printk("[debug]: &pde:\t0x%px\n", vtp_s.pde_p);
+			/*printk("[debug]: pde:\t0x%lx\n", *(unsigned long *)vtp_s.pde_p);*/ }
+		if(vtp_s.pte_p) {
+			printk("[debug]: &pte:\t0x%px\n", vtp_s.pte_p);
+			/*printk("[debug]: pte:\t0x%lx\n", *(unsigned long *)vtp_s.pte_p);*/ }
+		printk("[*] paddr: 0x%lx\n\n", paddr); }
 		
 	/*union msr_t ia32_lstar;
 	READ_MSR(ia32_lstar, 0xc0000082)

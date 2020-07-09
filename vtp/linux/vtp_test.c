@@ -9,7 +9,7 @@ int main() {
 	unsigned long vaddr=(unsigned long)&r;
 	unsigned long paddr=0;
 	
-	if( syscall(VTP_NUM, vaddr, &paddr) ) {
+	if( syscall(VTP_NUM, vaddr, &paddr, NULL) ) {
 		perror("fatal in syscall");
 		exit(-1); }
 	printf("virtual address:	%p\n"

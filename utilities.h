@@ -191,27 +191,23 @@ union pse_t {
 	__attribute__((packed));
 
 union vaddr_t {
-	struct vaddr_pse {
-		unsigned short offset:12;
-		unsigned short pt_bits:9;
-		unsigned short pd_bits:9;
-		unsigned short pdpt_bits:9;
-		unsigned short pml4_bits:9;
-		unsigned short pml5_bits:9;
-		unsigned char rsv_57_63:7; }
-		__attribute__((packed));
-	struct vaddr_4kb {
-		unsigned int offset:30;
-		unsigned long rsv_30_63:34; }
-		__attribute__((packed));
-	struct vaddr_2mb {
-		unsigned int offset:21;
-		unsigned long rsv_21_63:43; }
-		__attribute__((packed));
-	struct vaddr_4kb {
-		unsigned short offset:12;
-		unsigned long rsv_12_63:52; }
-		__attribute__((packed));
+	struct __attribute__((packed)) {
+		unsigned short offset_pse:12;
+		unsigned short pt_bits:9;	//bits 12 to 20
+		unsigned short pd_bits:9;	//bits 21 to 29
+		unsigned short pdpt_bits:9;	//bits 30 to 38
+		unsigned short pml4_bits:9;	//bits 39 to 47
+		unsigned short pml5_bits:9;	//bits 48 to 56
+		unsigned char rsv_57_63:7; };
+	struct __attribute__((packed)) {
+		unsigned int offset_1gb:30;
+		unsigned long rsv_30_63:34; };
+	struct __attribute__((packed)) {
+		unsigned int offset_2mb:21;
+		unsigned long rsv_21_63:43; };
+	struct __attribute__((packed)) {
+		unsigned short offset_4kb:12;
+		unsigned long rsv_12_63:52; };
 	unsigned long val; }
 	__attribute__((packed));
 
@@ -223,13 +219,12 @@ struct vtp_t {
 	union pse_t *pte_p; };
 
 __attribute__((__always_inline__)) unsigned int
-vtp(unsigned long vaddr, unsigned long *to_fill) {
-
+vtp(unsigned long addr, unsigned long *to_fill) {
 	//asm block checks to see if 4 or 5-level paging is enabled
 	//if so, moves the cr3 register into the cr3 variable
 	//and sets la57_flag to assert whether 4-level or 5-level
 	int la57_flag=0;
-	unsigned long cr3=0;
+	union pse_t cr3={0};
 	__asm__ __volatile__ (
 		"mov %%cr0, %%rax;"		//check bit 31 of cr0 (PG flag)
 		"test $0x80000000, %%eax;"	//deny request if 0
@@ -251,20 +246,22 @@ vtp(unsigned long vaddr, unsigned long *to_fill) {
 		"mov $0, %0;"
 	"break:\n"
 	
-		: "=r"(cr3), "=r"(la57_flag)
+		: "=r"(cr3.val), "=r"(la57_flag)
 		::"rax", "ecx", "memory");
 	if(!cr3) {
 		return -EOPNOTSUPP; }
 
-	unsigned long psentry=0, paddr=0;
+	unsigned long paddr=0;
+	union pse_t psentry={0};
+	union vaddr_t vaddr=(union vaddr_t)addr;
 
 	//pml5e (if applicable)
 	if(la57_flag) {			//5-level paging
 		//printk("[debug]: &pml5e:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) ));
 		psentry=*(unsigned long *)\
-			phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) );
+			phys_to_virt(cr3.addr_pse|(vaddr.pml5_bits>>45));
 		//printk("[debug]: pml5e:\t0x%lx\n", psentry);
-		if(!PE_P_FLAG(psentry)) {
+		if(!psentry.p) {
 			return -EFAULT; }}
 	else {
 		psentry=cr3; }
@@ -272,43 +269,43 @@ vtp(unsigned long vaddr, unsigned long *to_fill) {
 	//pml4e
 	//printk("[debug]: &pml4e:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) ));
 	psentry=*(unsigned long *)\
-		phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) );
+		phys_to_virt(psentry.addr_pse|(vaddr.pml4_bits>>36));
 	//printk("[debug]: pml4e:\t0x%lx\n", psentry);
-	if(!PE_P_FLAG(psentry)) {
+	if(!psentry.p) {
 		return -EFAULT; }
 
 	//pdpte
 	//printk("[debug]: &pdpte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) ));
 	psentry=*(unsigned long *)\
-		phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) );
+		phys_to_virt(psentry.addr_pse|(vaddr.pdpt_bits>>27));
 	//printk("[debug]: pdpte:\t0x%lx\n", psentry);
-	if(PE_PS_FLAG(psentry)) {	//1GB page
+	if(psentry.page_size) {	//1GB page
 		//bits (51 to 30) | bits (29 to 0)
-		paddr=(psentry&0x0ffffc00000000)|(vaddr&0x3fffffff);
+		paddr=psentry.addr_1gb|vaddr.offset_1gb;
 		*to_fill=paddr;
 		return 0; }
-	if(!PE_P_FLAG(psentry)) {
+	if(!psentry.p) {
 		return -EFAULT; }
 
 	//pde
 	//printk("[debug]: &pde:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) ));
 	psentry=*(unsigned long *)\
-		phys_to_virt( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) );
+		phys_to_virt(psentry.addr_pse|(vaddr.pd_bits>>18));
 	//printk("[debug]: pde:\t0x%lx\n", psentry);
-	if(PE_PS_FLAG(psentry)) {	//2MB page
+	if(psentry.page_size) {	//2MB page
 		//bits (51 to 21) | bits (20 to 0)
-		paddr=(psentry&0x0ffffffffe0000)|(vaddr&0x1ffff);
+		paddr=psentry.addr_2mb|vaddr.offset_2mb;
 		*to_fill=paddr;
 		return 0; }
-	if(!PE_P_FLAG(psentry)) {
+	if(!psentry.p) {
 		return -EFAULT; }
 
 	//pte
 	//printk("[debug]: &pte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) ));
 	psentry=*(unsigned long *)\
-		phys_to_virt( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) );
+		phys_to_virt(psentry.addr_pse|(vaddr.pt_bits>>9));
 	//printk("[debug]: pte:\t0x%lx\n", psentry);
-	paddr=(psentry&0x0ffffffffff000)|(vaddr&0xfff);
+	paddr=psentry.addr_4kb|vaddr.offset_4kb;
 	*to_fill=paddr;
 	return 0; }
 /////////////////////////////////////////////////////

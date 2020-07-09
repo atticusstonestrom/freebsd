@@ -12,20 +12,20 @@
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
-#define DISABLE_RW_PROTECTION \
-__asm__ __volatile__(
-	"push %rax;"
-	"mov %cr0, %rax;"
-	"and $0xfffffffffffeffff, %rax;"
-	"mov %rax, %cr0;"
-	"pop %rax;");
+#define DISABLE_RW_PROTECTION			\
+__asm__ __volatile__(				\
+	"push %rax;"				\
+	"mov %cr0, %rax;"			\
+	"and $0xfffffffffffeffff, %rax;"	\
+	"mov %rax, %cr0;"			\
+	"pop %rax;");				
 
 #define ENABLE_RW_PROTECTION \
-__asm__ __volatile__(
-	"push %rax;"
-	"mov %cr0, %rax;"
-	"or $0x10000, %rax;"
-	"mov %rax, %cr0;"
+__asm__ __volatile__(				\
+	"push %rax;"				\
+	"mov %cr0, %rax;"			\
+	"or $0x10000, %rax;"			\
+	"mov %rax, %cr0;"			\
 	"pop %rax;");
 /////////////////////////////////////////////////////
 
@@ -67,33 +67,33 @@ struct idtr_t {
 	struct idte_t *addr; }
 	__attribute__((packed));
 
-#define LOAD_IDT(dst)\
-__asm__ __volatile__(
-	"cli;"
-	"sidt %0;"
-	"sti;"
+#define LOAD_IDT(dst)	\
+__asm__ __volatile__(	\
+	"cli;"		\
+	"sidt %0;"	\
+	"sti;"		\
 	:: "m"(dst));
 
-#define WRITE_IDT(src) \
-__asm__ __volatile__(
-	"cli;"
-	"lidt %0;"
-	"sti;"
+#define WRITE_IDT(src)	\
+__asm__ __volatile__(	\
+	"cli;"		\
+	"lidt %0;"	\
+	"sti;"		\
 	:: "m"(src));
 /////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////
 #define PUSHA \
-	"push %rax;""push %rbx;""push %rcx;""push %rdx;"
-	"push %rbp;""push %rdi;""push %rsi;""push %r8;"
-	"push %r9;""push %r10;""push %r11;""push %r12;"
+	"push %rax;""push %rbx;""push %rcx;""push %rdx;"\
+	"push %rbp;""push %rdi;""push %rsi;""push %r8;"\
+	"push %r9;""push %r10;""push %r11;""push %r12;"\
 	"push %r13;""push %r14;""push %r15;""pushf;"
 
 #define POPA \
-	"popf;""pop %r15;""pop %r14;""pop %r13;"
-	"pop %r12;""pop %r11;""pop %r10;""pop %r9;"
-	"pop %r8;""pop %rsi;""pop %rdi;""pop %rbp;"
+	"popf;""pop %r15;""pop %r14;""pop %r13;"\
+	"pop %r12;""pop %r11;""pop %r10;""pop %r9;"\
+	"pop %r8;""pop %rsi;""pop %rdi;""pop %rbp;"\
 	"pop %rdx;""pop %rcx;""pop %rbx;""pop %rax;"
 /////////////////////////////////////////////////////
 		
@@ -197,7 +197,7 @@ vtp(unsigned long vaddr, unsigned long *to_fill) {
 		"mov $0, %0;"
 	"break:\n"
 	
-		: "m"(cr3), "m"(la57_flag)
+		: "=m"(cr3), "=m"(la57_flag)
 		::"rax", "ecx", "memory");
 	if(!cr3) {
 		return -EOPNOTSUPP; }

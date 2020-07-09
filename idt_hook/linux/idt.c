@@ -37,6 +37,7 @@ __asm__(
 	"mov %rsp, %rdi;"
 	"mov 32(%rsp), %rsp;"
 	PUSHA
+	"swapgs;"
 	"call hook;"
 	"swapgs;"
 	POPA

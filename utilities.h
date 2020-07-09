@@ -260,9 +260,10 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	if(la57_flag) {			//5-level paging
 		//printk("[debug]: &pml5e:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(cr3)|(PML5_MASK(vaddr)>>45) ));
 		if(vtp_p!=NULL) {
-			vtp_p->pml5e_p=(void *)phys_to_virt(cr3.addr_pse|((unsigned long)vaddr.pml5_bits>>45)); }
+			printk("[DEBUG]\n");
+			vtp_p->pml5e_p=(void *)phys_to_virt(cr3.addr_pse<<12|((unsigned long)vaddr.pml5_bits<<3)); }
 		psentry.val=*(unsigned long *)\
-			phys_to_virt(cr3.addr_pse|((unsigned long)vaddr.pml5_bits>>45));
+			phys_to_virt(cr3.addr_pse<<12|((unsigned long)vaddr.pml5_bits<<3));
 		//printk("[debug]: pml5e:\t0x%lx\n", psentry);
 		if(!psentry.p) {
 			return -EFAULT; }}
@@ -272,9 +273,9 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	//pml4e
 	//printk("[debug]: &pml4e:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PML4_MASK(vaddr)>>36) ));
 	if(vtp_p!=NULL) {
-		vtp_p->pml4e_p=(void *)phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pml4_bits>>36)); }
+		vtp_p->pml4e_p=(void *)phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pml4_bits<<3)); }
 	psentry.val=*(unsigned long *)\
-		phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pml4_bits>>36));
+		phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pml4_bits<<3));
 	//printk("[debug]: pml4e:\t0x%lx\n", psentry);
 	if(!psentry.p) {
 		return -EFAULT; }
@@ -282,9 +283,9 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	//pdpte
 	//printk("[debug]: &pdpte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PDPT_MASK(vaddr)>>27) ));
 	if(vtp_p!=NULL) {
-		vtp_p->pdpte_p=(void *)phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pdpt_bits>>27)); }
+		vtp_p->pdpte_p=(void *)phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pdpt_bits<<3)); }
 	psentry.val=*(unsigned long *)\
-		phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pdpt_bits>>27));
+		phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pdpt_bits<<3));
 	//printk("[debug]: pdpte:\t0x%lx\n", psentry);
 	if(psentry.page_size) {	//1GB page
 		//bits (51 to 30) | bits (29 to 0)
@@ -296,9 +297,9 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	//pde
 	//printk("[debug]: &pde:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PD_MASK(vaddr)>>18) ));
 	if(vtp_p!=NULL) {
-		vtp_p->pde_p=(void *)phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pd_bits>>18)); }
+		vtp_p->pde_p=(void *)phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pd_bits<<3)); }
 	psentry.val=*(unsigned long *)\
-		phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pd_bits>>18));
+		phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pd_bits<<3));
 	//printk("[debug]: pde:\t0x%lx\n", psentry);
 	if(psentry.page_size) {	//2MB page
 		//bits (51 to 21) | bits (20 to 0)
@@ -310,9 +311,9 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	//pte
 	//printk("[debug]: &pte:\t0x%px\n", phys_to_virt( PE_ADDR_MASK(psentry)|(PT_MASK(vaddr)>>9) ));
 	if(vtp_p!=NULL) {
-		vtp_p->pte_p=(void *)phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pt_bits>>9)); }
+		vtp_p->pte_p=(void *)phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pt_bits<<3)); }
 	psentry.val=*(unsigned long *)\
-		phys_to_virt(psentry.addr_pse|((unsigned long)vaddr.pt_bits>>9));
+		phys_to_virt(psentry.addr_pse<<12|((unsigned long)vaddr.pt_bits<<3));
 	//printk("[debug]: pte:\t0x%lx\n", psentry);
 	*paddr_p=psentry.addr_4kb|vaddr.offset_4kb;
 	return 0; }

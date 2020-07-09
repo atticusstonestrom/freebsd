@@ -212,19 +212,6 @@ idt_init(void) {
 	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
 	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	       
-	union __attribute__((packed)) {
-		struct __attribute__((packed)) {
-			unsigned int eax;
-			unsigned int edx; };
-		unsigned long val; }
-		ia32_lstar;
-	__asm__ __volatile__("rdmsr":"=a"(ia32_lstar.eax), "=d"(ia32_lstar.edx):"c"(0xc0000082));
-	printk("[*] ia32_lstar:\t0x%lx", ia32_lstar.val);
-	if(vtp(ia32_lstar.val, &paddr)) {
-		printk("[*] error\n\n"); }
-	else {
-		printk("[*] paddr: 0x%lx\n\n", paddr); }
-	       
 	unsigned long paddr;
 	printk("[*] asm_hook: 0x%px\n", &asm_hook);
 	if(vtp((unsigned long)&asm_hook, &paddr)) {
@@ -234,6 +221,19 @@ idt_init(void) {
 	
 	printk("[*] offset: 0x%lx\n", idte_offset);
 	if(vtp(idte_offset, &paddr)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] paddr: 0x%lx\n\n", paddr); }
+		
+	union __attribute__((packed)) {
+		struct __attribute__((packed)) {
+			unsigned int eax;
+			unsigned int edx; };
+		unsigned long val; }
+		ia32_lstar;
+	__asm__ __volatile__("rdmsr":"=a"(ia32_lstar.eax), "=d"(ia32_lstar.edx):"c"(0xc0000082));
+	printk("[*] ia32_lstar:\t0x%lx", ia32_lstar.val);
+	if(vtp(ia32_lstar.val, &paddr)) {
 		printk("[*] error\n\n"); }
 	else {
 		printk("[*] paddr: 0x%lx\n\n", paddr); }

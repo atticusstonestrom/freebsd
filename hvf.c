@@ -8,6 +8,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <asm/io.h>
+#include "utilities.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");

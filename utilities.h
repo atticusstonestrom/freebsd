@@ -2,7 +2,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <asm/io.h>
-#include "utilities-backup.h"
 
 /////////////////////////////////////////////////////
 // to-do: paging entry structure 

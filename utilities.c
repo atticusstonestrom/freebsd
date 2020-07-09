@@ -4,6 +4,12 @@
 #include <asm/io.h>
 
 /////////////////////////////////////////////////////
+// to-do: paging entry structure 
+// push %fs? push %gs?
+// struct gdte_t?
+/////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
 #define DISABLE_RW_PROTECTION \
 __asm__ __volatile__(
 	"push %rax;"
@@ -76,7 +82,6 @@ __asm__ __volatile__(
 
 
 /////////////////////////////////////////////////////
-//push %fs? push %gs?
 #define PUSHA \
 	"push %rax;""push %rbx;""push %rcx;""push %rdx;"
 	"push %rbp;""push %rdi;""push %rsi;""push %r8;"
@@ -94,7 +99,7 @@ __asm__ __volatile__(
 /////////////////////////////////////////////////////
 struct gdtr_t {
 	unsigned short lim_val;
-	void *addr; }		//struxt gdte_t?
+	void *addr; }
 	__attribute__((packed));
 
 struct tssd_t {

@@ -9,7 +9,6 @@
 #include <linux/kernel.h>
 #include <asm/io.h>
 #include "utilities.h"
-#include "utilities-backup.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
@@ -106,8 +105,16 @@ idt_init(void) {
 	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
 		printk("[*] error\n\n"); }
 	else {
-		printk("\n");
 		printk("[*] asm_hook: 0x%px\n", &asm_hook);
+		print_vtp_s(&vtp_s);
+		printk("[*] paddr: 0x%lx\n\n", paddr); }
+	
+	unsigned long pte_p=(unsigned long)(vtp_s.pte_p);
+	vtp_s=(struct vtp_t){0};
+	if(vtp(pte_p, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] &pte: 0x%lx\n", pte_p);
 		print_vtp_s(&vtp_s);
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 
@@ -115,7 +122,6 @@ idt_init(void) {
 	if(vtp(idte_offset, &paddr, &vtp_s)) {
 		printk("[*] error\n\n"); }
 	else {
-		printk("\n");
 		printk("[*] offset: 0x%lx\n", idte_offset);
 		print_vtp_s(&vtp_s);
 		printk("[*] paddr: 0x%lx\n\n", paddr); }

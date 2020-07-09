@@ -9,7 +9,6 @@
 #include <linux/unistd.h>
 #include <asm/io.h>
 #include "utilities.h"
-#include "utilities-backup.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");

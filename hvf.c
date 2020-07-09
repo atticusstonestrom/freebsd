@@ -40,29 +40,7 @@ unsigned long print_vtp(unsigned long vaddr, unsigned long *to_fill) {
 	//and sets la57_flag to assert whether 4-level or 5-level
 	int la57_flag=0;
 	unsigned long cr3=0;
-	__asm__ __volatile__ (
-		"mov %%cr0, %%rax;"		//check bit 31 of cr0 (PG flag)
-		"test $0x80000000, %%eax;"	//deny request if 0
-		"jz fail;"			//(ie if paging is not enabled)
-
-		"mov $0xc0000080, %%ecx;"	//check bit 8 of ia32_efer (LME flag)
-		"rdmsr;"			//deny request if 0
-		"test $0x100, %%eax;"		//(module currently can't handle pae paging)
-		"jz fail;"
-		
-	"success:\n"
-		"mov %%cr3, %0;"
-		"mov %%cr4, %%rax;"
-		"shr $20, %%rax;"
-		"and $1, %%rax;"
-		"mov %%eax, %1;"
-		"jmp break;"
-	"fail:\n"
-		"mov $0, %0;"
-	"break:\n"
-	
-		: "=r"(cr3), "=r"(la57_flag)
-		::"rax", "ecx", "memory");
+	__asm__ __volatile__ ("mov %%cr3, %0;":"=r"(cr3));
 	if(!cr3) {
 		return -EOPNOTSUPP; }
 	////////////////////////////////////////////////////////////////////

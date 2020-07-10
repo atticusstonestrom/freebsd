@@ -1,5 +1,6 @@
 https://en.wikipedia.org/wiki/Virtual_machine_escape
 https://stackoverflow.com/questions/60694243/how-does-kvm-qemu-and-guest-os-handles-page-fault
 https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2019/03/24/kvm-async-page-fault
+paging: vol 3a.4-49. pg 2935
 vol 3c.23-1. pg 3941
 qemu multiple cores

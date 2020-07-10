@@ -107,6 +107,22 @@ idt_init(void) {
 	else {
 		printk("[*] asm_hook: 0x%px\n", &asm_hook);
 		print_vtp_s(&vtp_s);
+		printk("[*] paddr: 0x%lx\n\n", paddr);
+		if(vtp_s.pte_p!=NULL) {
+			DISABLE_RW_PROTECTION
+			vtp_s.pte_p->global=1;
+			ENABLE_RW_PROTECTION
+			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory"); }}
+	/*unsigned long addr;
+	addr=(unsigned long)&idt_init;
+	printk("[*] idt_init @ 0x%lx\n\n", addr);
+	//printk("[*] idt_init @ 0x%px\n\n", &idt_init);*/
+	vtp_s=(struct vtp_t){0};
+	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] asm_hook: 0x%px\n", &asm_hook);
+		print_vtp_s(&vtp_s);
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
 	
 	unsigned long pte_p=(unsigned long)(vtp_s.pte_p);

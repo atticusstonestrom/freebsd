@@ -234,7 +234,7 @@ vtp(unsigned long addr, unsigned long *paddr_p, struct vtp_t *vtp_p) {
 	"success:\n"
 		"mov %%cr3, %0;"
 		"mov %%cr4, %%rax;"
-		"shr $20, %%rax;"
+		"shr $12, %%rax;"
 		"and $1, %%rax;"
 		"mov %%eax, %1;"
 		"jmp break;"

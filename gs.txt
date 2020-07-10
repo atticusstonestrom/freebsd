@@ -43,6 +43,8 @@ http://davidad.github.io/blog/2014/03/23/concurrency-primitives-in-intel-64-asse
 http://www0.cs.ucl.ac.uk/staff/B.Karp/3007/s2018/lectures/3007-lecture17-threads-x86-64.pdf
 https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell-which-core-the-instruction-is-being-run-on/56622112https://stackoverflow.com/questions/12894078/what-is-the-purpose-of-the-pause-instruction-in-x86
 vol 3a.4-49. 2935
+inter-processor interrupt: vol 3a.10-18. 3176
+https://stackoverflow.com/questions/3748384/what-is-tlb-shootdown
 ______________________________________________
 lfence
 https://stackoverflow.com/questions/20316124/does-it-make-any-sense-to-use-the-lfence-instruction-on-x86-x86-64-processors

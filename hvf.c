@@ -109,6 +109,7 @@ idt_init(void) {
 		print_vtp_s(&vtp_s);
 		printk("[*] paddr: 0x%lx\n\n", paddr);
 		if(vtp_s.pte_p!=NULL) {
+			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory");
 			DISABLE_RW_PROTECTION
 			vtp_s.pte_p->global=1;
 			ENABLE_RW_PROTECTION

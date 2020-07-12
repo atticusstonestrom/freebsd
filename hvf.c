@@ -29,9 +29,7 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"swapgs;"
 	"incl counter;"
-	"swapgs;"
 	"jmp *(idte_offset);");
 extern void asm_hook(void);
 

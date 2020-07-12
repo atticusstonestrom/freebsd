@@ -61,7 +61,8 @@ idt_init(void) {
 	       "[**] lim val:\t0x%x\n"
 	       "[*]  end dump\n\n",
 	       idtr.addr, idtr.lim_val);
-	zd_idte=(idtr.addr)+ZD_INT;
+	//zd_idte=(idtr.addr)+ZD_INT;
+	zd_idte=(idtr.addr)+3;
 
 	idte_offset=0
 		| ((long)(zd_idte->offset_0_15))
@@ -81,13 +82,21 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
+	zd_idte=(idtr.addr)+ZD_INT;
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
+	/*zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
-	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
+	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;*/
+	zd_idte->offset_0_15=(idte_offset)&0xffff;
+	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
+	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
+	idte_offset=0
+		| ((long)(zd_idte->offset_0_15))
+		| ((long)(zd_idte->offset_16_31)<<16)
+		| ((long)(zd_idte->offset_32_63)<<32);
 	printk("[*]  new idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"

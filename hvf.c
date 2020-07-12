@@ -7,6 +7,8 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/mm.h>
+#include <linux/kallsyms.h>
 #include <asm/io.h>
 #include "utilities.h"
 
@@ -114,6 +116,8 @@ idt_init(void) {
 			vtp_s.pte_p->global=1;
 			ENABLE_RW_PROTECTION
 			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory"); }}
+	struct page *mem_map = (struct page *) kallsyms_lookup_name("mem_map");
+	printk("[*] mem_map @ 0x%px\n\n", mem_map);
 	/*unsigned long addr;
 	addr=(unsigned long)&idt_init;
 	printk("[*] idt_init @ 0x%lx\n\n", addr);

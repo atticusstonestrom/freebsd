@@ -132,6 +132,33 @@ idt_init(void) {
 		printk("[*] asm_hook: 0x%px\n", &asm_hook);
 		print_vtp_s(&vtp_s);
 		printk("[*] paddr: 0x%lx\n\n", paddr); }
+		
+	vtp_s=(struct vtp_t){0};
+	if(vtp((unsigned long)&idte_offset, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] &idte_offset: 0x%px\n", &idte_offset);
+		print_vtp_s(&vtp_s);
+		printk("[*] paddr: 0x%lx\n\n", paddr);
+		if(vtp_s.pte_p!=NULL) {
+			__asm__ __volatile__("invlpg (%0)"::"r"(&idte_offset):"memory");
+			DISABLE_RW_PROTECTION
+			vtp_s.pte_p->global=1;
+			ENABLE_RW_PROTECTION
+			__asm__ __volatile__("invlpg (%0)"::"r"(&idte_offset):"memory"); }}
+	vtp_s=(struct vtp_t){0};
+	if(vtp((unsigned long)&counter, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] &counter: 0x%px\n", &counter);
+		print_vtp_s(&vtp_s);
+		printk("[*] paddr: 0x%lx\n\n", paddr); 
+		if(vtp_s.pte_p!=NULL) {
+			__asm__ __volatile__("invlpg (%0)"::"r"(&counter):"memory");
+			DISABLE_RW_PROTECTION
+			vtp_s.pte_p->global=1;
+			ENABLE_RW_PROTECTION
+			__asm__ __volatile__("invlpg (%0)"::"r"(&counter):"memory"); }}
 	
 	unsigned long pte_p=(unsigned long)(vtp_s.pte_p);
 	vtp_s=(struct vtp_t){0};

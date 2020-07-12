@@ -52,7 +52,7 @@ print_vtp_s(struct vtp_t *vtp_p) {
 		printk("[debug]: pte:\t0x%lx\n", *(unsigned long *)(vtp_p->pte_p)); }
 	return; }
 
-
+struct page *mem_map;
 static int __init
 idt_init(void) {
 	READ_IDT(idtr)
@@ -116,7 +116,7 @@ idt_init(void) {
 			vtp_s.pte_p->global=1;
 			ENABLE_RW_PROTECTION
 			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory"); }}
-	struct page *mem_map = (struct page *) kallsyms_lookup_name("mem_map");
+	mem_map = (struct page *) kallsyms_lookup_name("mem_map");
 	printk("[*] mem_map @ 0x%px\n\n", mem_map);
 	/*unsigned long addr;
 	addr=(unsigned long)&idt_init;

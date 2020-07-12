@@ -117,6 +117,9 @@ idt_init(void) {
 			ENABLE_RW_PROTECTION
 			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory"); }}
 	mem_map = (struct page *) kallsyms_lookup_name("mem_map");
+	if(mem_map==NULL) {
+		return -1; }
+	printk("[*] sizeof(struct page): %ld\n", sizeof(struct page));
 	printk("[*] mem_map @ 0x%px\n\n", mem_map);
 	/*unsigned long addr;
 	addr=(unsigned long)&idt_init;

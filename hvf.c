@@ -31,7 +31,7 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	//"xchg %ax, %ax;"
+	"xchg %ax, %ax;"
 	"incl counter;"
 	"jmp *(bp_handler);");
 extern void asm_hook(void);
@@ -99,15 +99,12 @@ idt_init(void) {
 	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
 	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
 	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-	zd_idte->offset_0_15=(idte_offset)&0xffff;
-	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
-	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
 	__asm__ __volatile__("sti":::"memory");
-	ENABLE_RW_PROTECTION
-	idte_offset=0
+	ENABLE_RW_PROTECTION*/
+	/*idte_offset=0
 		| ((long)(zd_idte->offset_0_15))
 		| ((long)(zd_idte->offset_16_31)<<16)
-		| ((long)(zd_idte->offset_32_63)<<32);
+		| ((long)(zd_idte->offset_32_63)<<32);*/
 	printk("[*]  new idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
@@ -118,7 +115,7 @@ idt_init(void) {
 	       "[*]  end dump\n\n",
 	       ZD_INT, (void *)(\
 	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
-	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);*/
+	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
 	       
 	unsigned long paddr;
 	struct vtp_t vtp_s={0};
@@ -212,9 +209,9 @@ idt_fini(void) {
 	printk("[*] counter: %d\n\n", counter);
 	/*DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	zd_idte->offset_0_15=idte_offset&0xffff;
-	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
-	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
+	zd_idte->offset_0_15=zd_handler&0xffff;
+	zd_idte->offset_16_31=(zd_handler>>16)&0xffff;
+	zd_idte->offset_32_63=(zd_handler>>32)&0xffffffff;
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION*/
 	DISABLE_RW_PROTECTION

@@ -20,7 +20,7 @@ MODULE_VERSION("0.01");
 
 struct idte_t *zd_idte;
 
-#define ZD_INT 0x01
+#define ZD_INT 0x03
 unsigned long zd_handler;			//contains absolute address of original interrupt handler
 unsigned long bp_handler;
 unsigned char orig_bytes[0x10];
@@ -71,9 +71,9 @@ idt_init(void) {
 		| ((long)(zd_idte->offset_16_31)<<16)
 		| ((long)(zd_idte->offset_32_63)<<32);
 	bp_handler=0
-		| ((long)((zd_idte+2)->offset_0_15))
-		| ((long)((zd_idte+2)->offset_16_31)<<16)
-		| ((long)((zd_idte+2)->offset_32_63)<<32);
+		| ((long)((zd_idte-2)->offset_0_15))
+		| ((long)((zd_idte-2)->offset_16_31)<<16)
+		| ((long)((zd_idte-2)->offset_32_63)<<32);
 	printk("[*]  old idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"

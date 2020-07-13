@@ -23,7 +23,7 @@ struct idte_t *zd_idte;
 #define ZD_INT 0x00
 unsigned long zd_handler;			//contains absolute address of original interrupt handler
 unsigned long bp_handler;
-#define SHELLCODE_SIZE 0x30
+#define SHELLCODE_SIZE 0x90
 unsigned char orig_bytes[SHELLCODE_SIZE];
 struct idtr_t idtr;
 
@@ -32,18 +32,65 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	//"xchg %ax, %ax;"
-	//"incl counter;"
+	
+	"push %rax;"	//struct tss_t *tss
+	"push %rbx;"	//struct tssd_t *tssd
+	"push %rdx;"	//placeholder
+	"sub $12, %rsp;"
+	"sgdt (%rsp);"
+	"str 10(%rsp);"
+	"movzwl 10(%rsp), %ebx;"
+	"addq 2(%rsp), %rbx;"
+
+	"movzwl 2(%rbx), %eax;"
+	"movzbl 4(%rbx), %edx;"
+	"shl $16, %rdx;"
+	"or %rdx, %rax;"
+	"movzbl 7(%rbx), %edx;"
+	"shl $24, %rdx;"
+	"or %rdx, %rax;"
+	"mov 8(%rbx), %edx;"
+	"shl $32, %rdx;"
+	"or %rdx, %rax;"
+	
+	"add $12, %rsp;"
+	"pop %rdx;"
+	"lea 16(%rsp), %rbx;"
+	
+	"mov 12(%rax), %rsp;"
+	"push 48(%rbx);"	//ss
+	"push 40(%rbx);"	//rsp
+	"push 30(%rbx);"	//rflags
+	"push 22(%rbx);"	//cs
+	"push 16(%rbx);"	//rip
+	"push %rbx;"		//old rsp
+	"mov -8(%rbx), %rax;"
+	"mov -16(%rbx), %rbx;"
+
+	"incl counter;"
+	
 	"push %rax;"
-	"mov %rsp, %rax;"
-	"mov 32(%rsp), %rsp;"
-	"push 40(%rax);"
-	"push 32(%rax);"
-	"push 24(%rax);"
-	"push 16(%rax);"
-	"push 8(%rax);"
-	"mov (%rax), %rax;"
-	"jmp *(bp_handler);");
+	"push %rbx;"
+	"subq $8, 16(%rsp);"
+	"movq (bp_handler), %rax;"
+	"mov 16(%rsp), %rbx;"
+	"mov %rax, (%rbx);"
+	"pop %rbx;"
+	"pop %rax;"
+	"mov (%rsp), %rsp;"
+	"ret;"
+	
+	/*"push %rax;"
+	"push %rbx;"
+	"mov 16(%rsp), %rax;"
+	"movq (bp_handler), %rbx;"
+	"mov %rbx, -8(%rax);"
+	"pop %rbx;"
+	"pop %rax;"
+	"mov (%rsp), %rsp;"
+	"sub $8, %rsp;"
+	"ret;"*/);
+	//"jmp *(bp_handler);");
 extern void asm_hook(void);
 
 static void

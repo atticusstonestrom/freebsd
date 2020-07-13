@@ -20,10 +20,11 @@ MODULE_VERSION("0.01");
 
 struct idte_t *zd_idte;
 
-#define ZD_INT 0x03
+#define ZD_INT 0x00
 unsigned long zd_handler;			//contains absolute address of original interrupt handler
 unsigned long bp_handler;
-unsigned char orig_bytes[0x10];
+#define SHELLCODE_SIZE 0x30
+unsigned char orig_bytes[SHELLCODE_SIZE];
 struct idtr_t idtr;
 
 int counter=0;
@@ -31,8 +32,17 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"xchg %ax, %ax;"
+	//"xchg %ax, %ax;"
 	//"incl counter;"
+	"push %rax;"
+	"mov %rsp, %rax;"
+	"mov 32(%rsp), %rsp;"
+	"push 40(%rax);"
+	"push 32(%rax);"
+	"push 24(%rax);"
+	"push 16(%rax);"
+	"push 8(%rax);"
+	"mov (%rax), %rax;"
 	"jmp *(bp_handler);");
 extern void asm_hook(void);
 
@@ -71,9 +81,9 @@ idt_init(void) {
 		| ((long)(zd_idte->offset_16_31)<<16)
 		| ((long)(zd_idte->offset_32_63)<<32);
 	bp_handler=0
-		| ((long)((zd_idte-2)->offset_0_15))
-		| ((long)((zd_idte-2)->offset_16_31)<<16)
-		| ((long)((zd_idte-2)->offset_32_63)<<32);
+		| ((long)((zd_idte+3)->offset_0_15))
+		| ((long)((zd_idte+3)->offset_16_31)<<16)
+		| ((long)((zd_idte+3)->offset_32_63)<<32);
 	printk("[*]  old idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
@@ -88,10 +98,10 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
-	memcpy(orig_bytes, (void *)zd_handler, 0x10);
+	memcpy(orig_bytes, (void *)zd_handler, SHELLCODE_SIZE);
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	memcpy((void *)zd_handler, &asm_hook, 0x10);
+	memcpy((void *)zd_handler, &asm_hook, SHELLCODE_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
 	/*DISABLE_RW_PROTECTION
@@ -226,7 +236,7 @@ idt_fini(void) {
 	ENABLE_RW_PROTECTION*/
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	memcpy((void *)zd_handler, orig_bytes, 0x10);
+	memcpy((void *)zd_handler, orig_bytes, SHELLCODE_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION }
 

@@ -207,6 +207,16 @@ idt_init(void) {
 static void __exit
 idt_fini(void) {
 	printk("[*] counter: %d\n\n", counter);
+	unsigned long paddr;
+	struct vtp_t vtp_s={0};
+	
+	vtp_s=(struct vtp_t){0};
+	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
+		printk("[*] error\n\n"); }
+	else {
+		printk("[*] asm_hook: 0x%px\n", &asm_hook);
+		print_vtp_s(&vtp_s);
+		printk("[*] paddr: 0x%lx\n\n", paddr); }
 	/*DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
 	zd_idte->offset_0_15=zd_handler&0xffff;

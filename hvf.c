@@ -32,7 +32,7 @@ __asm__(
 	".global asm_hook;"
 "asm_hook:;"
 	"xchg %ax, %ax;"
-	"incl counter;"
+	//"incl counter;"
 	"jmp *(bp_handler);");
 extern void asm_hook(void);
 

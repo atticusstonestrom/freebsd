@@ -23,8 +23,8 @@ struct idte_t *zd_idte;
 #define ZD_INT 0x00
 unsigned long zd_handler;			//contains absolute address of original interrupt handler
 unsigned long bp_handler;
-#define SHELLCODE_SIZE 0x90
-unsigned char orig_bytes[SHELLCODE_SIZE];
+#define STUB_SIZE 0x26
+unsigned char orig_bytes[STUB_SIZE];
 struct idtr_t idtr;
 
 int counter=0;
@@ -92,6 +92,24 @@ __asm__(
 	"ret;"*/);
 	//"jmp *(bp_handler);");
 extern void asm_hook(void);
+__asm__(
+	".text;"
+	".global stub;"
+"stub:;"
+	"push %rax;"
+	//"push %rbx;"
+	"mov %rsp, %rax;"
+	"mov 32(%rsp), %rsp;"
+	"pushq (asm_hook);"
+	"mov %rax, %rsp;"
+	//"pop %rbx;"
+	"pop %rax;"
+	"pushq $asm_hook;"
+	"ret;");
+	//"jmpq asm_hook;");
+	//"pushq $asm_hook;"
+	//"ret;");
+extern void stub(void);
 
 static void
 print_vtp_s(struct vtp_t *vtp_p) {
@@ -145,10 +163,10 @@ idt_init(void) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 
-	memcpy(orig_bytes, (void *)zd_handler, SHELLCODE_SIZE);
+	memcpy(orig_bytes, (void *)zd_handler, STUB_SIZE);
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	memcpy((void *)zd_handler, &asm_hook, SHELLCODE_SIZE);
+	memcpy((void *)zd_handler, &stub, STUB_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
 	/*DISABLE_RW_PROTECTION
@@ -283,7 +301,7 @@ idt_fini(void) {
 	ENABLE_RW_PROTECTION*/
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
-	memcpy((void *)zd_handler, orig_bytes, SHELLCODE_SIZE);
+	memcpy((void *)zd_handler, orig_bytes, STUB_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION }
 

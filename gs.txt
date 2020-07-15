@@ -32,6 +32,10 @@ https://www.kernel.org/doc/Documentation/admin-guide/hw-vuln/spectre.rst
 https://en.wikipedia.org/wiki/SWAPGS_(security_vulnerability)
 https://access.redhat.com/articles/4329821
 https://businessresources.bitdefender.com/hubfs/noindex/Bitdefender-WhitePaper-INTEL-CPUs.pdf
+
+key!
+https://everdox.net/popss.pdf
+https://stackoverflow.com/questions/50286277/explain-linux-commit-message-that-patches-secures-pop-ss-followed-by-a-bp-inter
 ______________________________________________
 multiprocessor:
 https://stackoverflow.com/questions/980999/what-does-multicore-assembly-language-look-like

@@ -2,3 +2,4 @@ https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
 ROP
 Trap flag kernel debugging?
 trace_printk
+https://superuser.com/questions/1364105/how-is-the-operating-system-able-to-know-the-battery-level

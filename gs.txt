@@ -50,6 +50,7 @@ https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell
 vol 3a.4-49. 2935
 inter-processor interrupt: vol 3a.10-18. 3176
 https://stackoverflow.com/questions/3748384/what-is-tlb-shootdown
+serializing instruction, multiple-processor management, chapter 8 volume 3a
 ______________________________________________
 lfence
 https://stackoverflow.com/questions/20316124/does-it-make-any-sense-to-use-the-lfence-instruction-on-x86-x86-64-processors

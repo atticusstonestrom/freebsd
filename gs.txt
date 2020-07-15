@@ -28,6 +28,7 @@ ______________________________________________
 https://stackoverflow.com/questions/40653480/x86-x64-modifying-tss-fields
 ______________________________________________
 https://0xax.gitbooks.io/linux-insides/content/Booting/linux-bootstrap-1.html
+3125, STARTUP.ASM listing
 ______________________________________________
 https://www.kernel.org/doc/Documentation/admin-guide/hw-vuln/spectre.rst
 https://en.wikipedia.org/wiki/SWAPGS_(security_vulnerability)

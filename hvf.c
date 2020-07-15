@@ -33,9 +33,9 @@ __asm__(
 	".global asm_hook;"
 "asm_hook:;"
 	
-	"push %rax;"	//struct tss_t *tss
-	"push %rbx;"	//struct tssd_t *tssd
-	"push %rdx;"	//placeholder
+	"push %rax;"		//struct tss_t *tss
+	"push %rbx;"		//struct tssd_t *tssd
+	"push %rdx;"		//placeholder
 	"sub $12, %rsp;"
 	"sgdt (%rsp);"
 	"str 10(%rsp);"
@@ -55,14 +55,14 @@ __asm__(
 	
 	"add $12, %rsp;"
 	"pop %rdx;"
-	"lea 16(%rsp), %rbx;"
+	"lea 16(%rsp), %rbx;"	//original rsp
 	
-	"mov 12(%rax), %rsp;"
-	"push 48(%rbx);"	//ss
-	"push 40(%rbx);"	//rsp
-	"push 30(%rbx);"	//rflags
-	"push 22(%rbx);"	//cs
-	"push 16(%rbx);"	//rip
+	"mov 12(%rax), %rsp;"	//lock sub 12(%rax)?
+	"push 32(%rbx);"	//ss
+	"push 24(%rbx);"	//rsp
+	"push 16(%rbx);"	//rflags
+	"push 8(%rbx);"		//cs
+	"push (%rbx);"		//rip
 	"push %rbx;"		//old rsp
 	"mov -8(%rbx), %rax;"
 	"mov -16(%rbx), %rbx;"
@@ -96,14 +96,15 @@ __asm__(
 	".text;"
 	".global stub;"
 "stub:;"
-	"push %rax;"
+	/*"push %rax;"
 	//"push %rbx;"
 	"mov %rsp, %rax;"
-	"mov 32(%rsp), %rsp;"
+	"mov 32(%rsp), %rsp;"*/
 	"pushq (asm_hook);"
-	"mov %rax, %rsp;"
+	"add $8, %rsp;"	//
+	/*"mov %rax, %rsp;"
 	//"pop %rbx;"
-	"pop %rax;"
+	"pop %rax;"*/
 	"pushq $asm_hook;"
 	"ret;");
 	//"jmpq asm_hook;");
@@ -166,6 +167,7 @@ idt_init(void) {
 	memcpy(orig_bytes, (void *)zd_handler, STUB_SIZE);
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
+	zd_idte->ist=(zd_idte+1)->ist;
 	memcpy((void *)zd_handler, &stub, STUB_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
@@ -301,6 +303,7 @@ idt_fini(void) {
 	ENABLE_RW_PROTECTION*/
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
+	zd_idte->ist=0;
 	memcpy((void *)zd_handler, orig_bytes, STUB_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION }

@@ -1,0 +1,4 @@
+https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
+ROP
+Trap flag kernel debugging?
+trace_printk

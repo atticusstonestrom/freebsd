@@ -101,6 +101,7 @@ __asm__(
 		//"push %rbx;"
 		"mov %rsp, %rax;"
 		"mov 32(%rsp), %rsp;"*/
+//push, pop cr3
 "movabs $0xdeadbeefdeadbeef, %rax;"	// $counter. phys_to_virt?
 "mov %cr3, %rbx;"
 "and $0xfffffffffffff000, %rbx;"

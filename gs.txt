@@ -19,7 +19,7 @@ https://stackoverflow.com/questions/28759227/which-stack-is-used-by-interrupt-ha
 
 https://www.cntofu.com/book/104/Interrupts/interrupts-5.md
 https://stackoverflow.com/questions/9113310/segment-selector-in-ia-32
-tss x64 [how is stack for IRQ handler decided?]
+https://www.kernel.org/doc/Documentation/x86/kernel-stacks
 
 
 https://stackoverflow.com/questions/11497563/detail-about-msr-gs-base-in-linux-x86-64

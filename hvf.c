@@ -108,7 +108,7 @@ __asm__(
 "and $0xfff, %rax;"
 "and %rbx, %rax;"
 "movq (%rax), %rdx;"
-"incl counter;"
+"incl counter;"				// not an absolute address?
 	"push %rbx;"
 	"push %rax;"
 	"mov %rsp, %rax;"

@@ -17,6 +17,7 @@ running out of stack space in an interrupt handler
 https://stackoverflow.com/questions/28759227/which-stack-is-used-by-interrupt-handler-linux
 
 
+https://www.cntofu.com/book/104/Interrupts/interrupts-5.md
 https://stackoverflow.com/questions/9113310/segment-selector-in-ia-32
 tss x64 [how is stack for IRQ handler decided?]
 
@@ -38,6 +39,9 @@ https://businessresources.bitdefender.com/hubfs/noindex/Bitdefender-WhitePaper-I
 key!
 https://everdox.net/popss.pdf
 https://stackoverflow.com/questions/50286277/explain-linux-commit-message-that-patches-secures-pop-ss-followed-by-a-bp-inter
+______________________________________________
+tlbs:
+http://pages.cs.wisc.edu/~remzi/OSFEP/vm-tlbs.pdf
 ______________________________________________
 multiprocessor:
 https://stackoverflow.com/questions/980999/what-does-multicore-assembly-language-look-like

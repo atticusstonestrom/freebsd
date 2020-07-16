@@ -101,19 +101,21 @@ __asm__(
 		//"push %rbx;"
 		"mov %rsp, %rax;"
 		"mov 32(%rsp), %rsp;"*/
-	/*"movq $0xffff9de43c4247f8, %rax;"
-	"movq (%rax), %rbx;"
-	"incl counter;"*/
+"movabs $0xdeadbeefdeadbeef, %rax;"
+"mov %cr3, %rbx;"
+"and $0xfffffffffffff000, %rbx;"
+"and $0xfff, %rax;"
+"and %rbx, %rax;"
+"movq (%rax), %rdx;"
+"incl counter;"
 	"push %rbx;"
 	"push %rax;"
 	"mov %rsp, %rax;"
 	"movq "RSP1_OFFSET"(%rip), %rbx;"
 	"movq (%rbx), %rsp;"
 			//"movq (%rip), %rbx;"
-	"movabs $0xffff9de43c4247f8, %rax;"
-	"movq (%rax), %rbx;"
 	"incl counter;"
-	//"movq (bp_handler), %rbx;"
+	"movq (bp_handler), %rbx;"
 	"xchg %rbx, 8(%rax);"
 	"mov %rax, %rsp;"
 	"pop %rax;"
@@ -181,7 +183,10 @@ idt_init(void) {
 	if(!zd_idte->p) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
-		
+	
+	unsigned long cr3;
+	__asm__ __volatile__("mov %%cr3, %0;":"=r"(cr3));
+	printk("[debug]: cr3:\t0x%lx\n", cr3);
 	unsigned long paddr;
 	struct vtp_t vtp_s={0};
 	if(vtp((unsigned long)&counter, &paddr, &vtp_s)) {
@@ -202,8 +207,8 @@ idt_init(void) {
 	__asm__ __volatile__("cli":::"memory");
 	//zd_idte->ist=(zd_idte+1)->ist;
 	memcpy((void *)zd_handler, &stub, STUB_SIZE);
-	//memcpy((void *)(zd_handler+2), &(vtp_s.pte_p), 8);
-	memcpy((void *)(zd_handler+17), &(vtp_s.pte_p), 8);
+	memcpy((void *)(zd_handler+2), &(vtp_s.pte_p), 8);
+	//memcpy((void *)(zd_handler+17), &(vtp_s.pte_p), 8);
 	*(void **)(zd_handler+STUB_SIZE)=&(get_tss()->rsp1);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION

@@ -5,3 +5,4 @@ paging: vol 3a.4-49. pg 2935
 vol 3c.23-1. pg 3941
 qemu multiple cores
 eflags.vm
+https://www.linux-kvm.org/page/Memory

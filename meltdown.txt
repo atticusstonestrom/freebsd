@@ -2,6 +2,8 @@ https://www.kernel.org/doc/html/latest/x86/pti.html
 https://security.stackexchange.com/questions/176624/how-do-i-check-if-kpti-is-enabled-on-linux
 https://www.infradead.org/~mchehab/rst_conversion/x86/pti.html
 https://www.usenix.org/system/files/login/articles/login_winter18_03_gruss.pdf
+flush+reload
+  https://www.youtube.com/watch?v=UmLB1EWelCw
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 key!
 https://googleprojectzero.blogspot.com/2018/09/a-cache-invalidation-bug-in-linux.html

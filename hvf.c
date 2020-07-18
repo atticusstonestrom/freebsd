@@ -90,7 +90,7 @@ idt_init(void) {
 		| ((long)((idte+BP_INT)->offset_0_15))
 		| ((long)((idte+BP_INT)->offset_16_31)<<16)
 		| ((long)((idte+BP_INT)->offset_32_63)<<32);
-	printk("[*]  breakpoint handler:\t0x%lx\n\n", bp_handler);
+	printk("[*]  soft bp handler:\t0x%lx\n\n", bp_handler);
 
 
 	unsigned long cr3;

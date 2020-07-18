@@ -23,9 +23,8 @@ struct idte_t *zd_idte;
 #define ZD_INT 0x00
 unsigned long zd_handler;			//contains absolute address of original interrupt handler
 unsigned long bp_handler;
-#define STUB_SIZE 0x28
-#define RSP1_OFFSET "28"	//STUB_SIZE-12
-unsigned char orig_bytes[STUB_SIZE+8];
+#define STUB_SIZE 0x2b
+unsigned char orig_bytes[STUB_SIZE];
 struct idtr_t idtr;
 
 int counter=0;
@@ -97,41 +96,43 @@ __asm__(
 	".text;"
 	".global stub;"
 "stub:;"
-		/*"push %rax;"
-		//"push %rbx;"
-		"mov %rsp, %rax;"
-		"mov 32(%rsp), %rsp;"*/
-//push, pop cr3
-"movabs $0xdeadbeefdeadbeef, %rax;"	// $counter. phys_to_virt?
-"mov %cr3, %rbx;"
-"and $0xfffffffffffff000, %rbx;"
-"and $0xfff, %rax;"
-"and %rbx, %rax;"
-"movq (%rax), %rdx;"
-"incl counter;"				// not an absolute address?
-	"push %rbx;"
-	"push %rax;"
-	"mov %rsp, %rax;"
-	"movq "RSP1_OFFSET"(%rip), %rbx;"
-	"movq (%rbx), %rsp;"
-			//"movq (%rip), %rbx;"
-	"incl counter;"
-	"movq (bp_handler), %rbx;"
-	"xchg %rbx, 8(%rax);"
-	"mov %rax, %rsp;"
+	"push %rax;"	//bp_handler	
+	"push %rbx;"	//new cr3, &asm_hook
+	"push %rdx;"	//old cr3
+	"mov %cr3, %rdx;"
+	"mov .CR3(%rip), %rbx;"
+	"mov %rbx, %cr3;"
+	"mov $asm_hook, %rbx;"
+	"call *%rbx;"
+	"mov %rdx, %cr3;"
+	"pop %rdx;"
+	"pop %rbx;"
+	"xchg %rax, (%rsp);"
+	"ret;"
+	/*"push %rdx;"	//bp_handler
+	"push %rbx;"	//new cr3
+	"push %rax;"	//old cr3
+	"mov %cr3, %rax;"
+	"mov .CR3(%rip), %rbx;"
+	"mov %rbx, %cr3;"
+		"incl counter;"				// invlpg?
+		"movq (bp_handler), %rdx;"
+	"mov %rax, %cr3;"
 	"pop %rax;"
-	"ret;");
-	//"pushq (asm_hook);"
-	//"add $8, %rsp;"	//
-		/*"mov %rax, %rsp;"
-		//"pop %rbx;"
-		"pop %rax;"*/
-	//"pushq $asm_hook;"
-	//"ret;");
-		//"jmpq asm_hook;");
-		//"pushq $asm_hook;"
-		//"ret;");
+	"pop %rbx;"
+	"xchg %rcx, (%rsp);"
+	"ret;"*/
+".CR3:;"
+	".quad 0xdeadbeefdeadbeef;");
 extern void stub(void);
+__asm__(
+	".text;"
+	".global asm_hook;"
+"asm_hook:;"
+	"incl counter;"
+	"movq (bp_handler), %rax;"
+	"ret;");
+extern void asm_hook(void);
 
 static void
 print_vtp_s(struct vtp_t *vtp_p) {
@@ -171,7 +172,7 @@ idt_init(void) {
 		| ((long)((zd_idte+3)->offset_0_15))
 		| ((long)((zd_idte+3)->offset_16_31)<<16)
 		| ((long)((zd_idte+3)->offset_32_63)<<32);
-	printk("[*]  old idt entry %d:\n"
+	printk("[*]  idt entry %d:\n"
 	       "[**] addr:\t0x%px\n"
 	       "[**] segment:\t0x%x\n"
 	       "[**] ist:\t%d\n"
@@ -184,10 +185,8 @@ idt_init(void) {
 	if(!zd_idte->p) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
-	
-	unsigned long cr3;
-	__asm__ __volatile__("mov %%cr3, %0;":"=r"(cr3));
-	printk("[debug]: cr3:\t0x%lx\n", cr3);
+	printk("[*]  breakpoint handler:\t0x%lx\n\n", bp_handler);
+
 	unsigned long paddr;
 	struct vtp_t vtp_s={0};
 	if(vtp((unsigned long)&counter, &paddr, &vtp_s)) {
@@ -203,151 +202,29 @@ idt_init(void) {
 			ENABLE_RW_PROTECTION
 			__asm__ __volatile__("invlpg (%0)"::"r"(&counter):"memory"); }*/}
 
-	memcpy(orig_bytes, (void *)zd_handler, STUB_SIZE+8);
+	unsigned long cr3;
+	__asm__ __volatile__("mov %%cr3, %0":"=r"(cr3)::"memory");
+	printk("[*] cr3:\t0x%lx\n\n", cr3);
+
+	memcpy(orig_bytes, (void *)zd_handler, STUB_SIZE);
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
 	//zd_idte->ist=(zd_idte+1)->ist;
 	memcpy((void *)zd_handler, &stub, STUB_SIZE);
-	memcpy((void *)(zd_handler+2), &(vtp_s.pte_p), 8);
-	//memcpy((void *)(zd_handler+17), &(vtp_s.pte_p), 8);
-	*(void **)(zd_handler+STUB_SIZE)=&(get_tss()->rsp1);
+	*(unsigned long *)(zd_handler+STUB_SIZE-8)=cr3;
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
-		/*DISABLE_RW_PROTECTION
-		__asm__ __volatile__("cli":::"memory");
-		zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
-		zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
-		zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-		__asm__ __volatile__("sti":::"memory");
-		ENABLE_RW_PROTECTION*/
-		/*idte_offset=0
-			| ((long)(zd_idte->offset_0_15))
-			| ((long)(zd_idte->offset_16_31)<<16)
-			| ((long)(zd_idte->offset_32_63)<<32);*/
-	/*printk("[*]  new idt entry %d:\n"
-	       "[**] addr:\t0x%px\n"
-	       "[**] segment:\t0x%x\n"
-	       "[**] ist:\t%d\n"
-	       "[**] type:\t%d\n"
-	       "[**] dpl:\t%d\n"
-	       "[**] p:\t\t%d\n"
-	       "[*]  end dump\n\n",
-	       ZD_INT, (void *)(\
-	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
-	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);*/
-	       
-	//unsigned long paddr;
-	//struct vtp_t vtp_s={0};
-	
-	/*vtp_s=(struct vtp_t){0};
-	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
-		printk("[*] error\n\n"); }
-	else {
-		printk("[*] asm_hook: 0x%px\n", &asm_hook);
-		print_vtp_s(&vtp_s);
-		printk("[*] paddr: 0x%lx\n\n", paddr);
-		if(vtp_s.pte_p!=NULL) {
-			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory");
-			DISABLE_RW_PROTECTION
-			vtp_s.pte_p->global=1;
-			ENABLE_RW_PROTECTION
-			__asm__ __volatile__("invlpg (%0)"::"r"(&asm_hook):"memory"); }}*/
-		/*mem_map = (struct page *) kallsyms_lookup_name("mem_map");
-		if(mem_map==NULL) {
-			return -1; }
-		printk("[*] sizeof(struct page): %ld\n", sizeof(struct page));
-		printk("[*] mem_map @ 0x%px\n\n", mem_map);
-		unsigned long addr;
-		addr=(unsigned long)&idt_init;
-		printk("[*] idt_init @ 0x%lx\n\n", addr);
-		//printk("[*] idt_init @ 0x%px\n\n", &idt_init);*/
-	/*vtp_s=(struct vtp_t){0};
-	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
-		printk("[*] error\n\n"); }
-	else {
-		printk("[*] asm_hook: 0x%px\n", &asm_hook);
-		print_vtp_s(&vtp_s);
-		printk("[*] paddr: 0x%lx\n\n", paddr); }*/
-		
-		/*vtp_s=(struct vtp_t){0};
-		if(vtp((unsigned long)&idte_offset, &paddr, &vtp_s)) {
-			printk("[*] error\n\n"); }
-		else {
-			printk("[*] &idte_offset: 0x%px\n", &idte_offset);
-			print_vtp_s(&vtp_s);
-			printk("[*] paddr: 0x%lx\n\n", paddr);
-			if(vtp_s.pte_p!=NULL) {
-				__asm__ __volatile__("invlpg (%0)"::"r"(&idte_offset):"memory");
-				DISABLE_RW_PROTECTION
-				vtp_s.pte_p->global=1;
-				ENABLE_RW_PROTECTION
-				__asm__ __volatile__("invlpg (%0)"::"r"(&idte_offset):"memory"); }}*/
-					/*unsigned long paddr;
-					struct vtp_t vtp_s={0};
-					if(vtp((unsigned long)&counter, &paddr, &vtp_s)) {
-						printk("[*] error\n\n"); }
-					else {
-						printk("[*] &counter: 0x%px\n", &counter);
-						print_vtp_s(&vtp_s);
-						printk("[*] paddr: 0x%lx\n\n", paddr); 
-						if(vtp_s.pte_p!=NULL) {
-							__asm__ __volatile__("invlpg (%0)"::"r"(&counter):"memory");
-							DISABLE_RW_PROTECTION
-							vtp_s.pte_p->global=1;
-							ENABLE_RW_PROTECTION
-							__asm__ __volatile__("invlpg (%0)"::"r"(&counter):"memory"); }}*/
-	
-	/*unsigned long pte_p=(unsigned long)(vtp_s.pte_p);
-	vtp_s=(struct vtp_t){0};
-	if(vtp(pte_p, &paddr, &vtp_s)) {
-		printk("[*] error\n\n"); }
-	else {
-		printk("[*] &pte: 0x%lx\n", pte_p);
-		print_vtp_s(&vtp_s);
-		printk("[*] paddr: 0x%lx\n\n", paddr); }*/
-
-		/*vtp_s=(struct vtp_t){0};
-		if(vtp(idte_offset, &paddr, &vtp_s)) {
-			printk("[*] error\n\n"); }
-		else {
-			printk("[*] offset: 0x%lx\n", idte_offset);
-			print_vtp_s(&vtp_s);
-			printk("[*] paddr: 0x%lx\n\n", paddr); }*/
-
-		/*union msr_t ia32_lstar;
-		READ_MSR(ia32_lstar, 0xc0000082)
-		printk("[*] ia32_lstar:\t0x%lx", ia32_lstar.val);
-		if(print_vtp(ia32_lstar.val, &paddr)) {
-			printk("[*] error\n\n"); }
-		else {
-			printk("[*] paddr: 0x%lx\n\n", paddr); }*/
 
 	return 0; }
 
 static void __exit
 idt_fini(void) {
 	printk("[*] counter: %d\n\n", counter);
-	/*unsigned long paddr;
-	struct vtp_t vtp_s={0};
-	
-	vtp_s=(struct vtp_t){0};
-	if(vtp((unsigned long)&asm_hook, &paddr, &vtp_s)) {
-		printk("[*] error\n\n"); }
-	else {
-		printk("[*] asm_hook: 0x%px\n", &asm_hook);
-		print_vtp_s(&vtp_s);
-		printk("[*] paddr: 0x%lx\n\n", paddr); }*/
-		/*DISABLE_RW_PROTECTION
-		__asm__ __volatile__("cli":::"memory");
-		zd_idte->offset_0_15=zd_handler&0xffff;
-		zd_idte->offset_16_31=(zd_handler>>16)&0xffff;
-		zd_idte->offset_32_63=(zd_handler>>32)&0xffffffff;
-		__asm__ __volatile__("sti":::"memory");
-		ENABLE_RW_PROTECTION*/
+
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
 	zd_idte->ist=0;
-	memcpy((void *)zd_handler, orig_bytes, STUB_SIZE+8);
+	memcpy((void *)zd_handler, orig_bytes, STUB_SIZE);
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION }
 

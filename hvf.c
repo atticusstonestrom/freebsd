@@ -27,11 +27,23 @@ unsigned char orig_bytes[STUB_SIZE];	//contains the original bytes of the divisi
 struct idtr_t idtr;			//holds base address and limit value of the IDT
 
 int counter=0;
+__attribute__((__used__))
+static void hook(void) {
+	printk("[*] in the hook! counter %d\n", ++counter);
+	return; }
+
 __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
-	"incl counter;"
+	PUSHA
+	"call get_tss;"
+	"push %rsp;"
+	"12(%rax)
+	"swapgs;"
+	"call hook;"
+	"swapgs;"
+	POPA
 	"movq (bp_handler), %rax;"
 	"ret;");
 extern void asm_hook(void);

@@ -1,5 +1,6 @@
 https://www.kernel.org/doc/html/latest/x86/pti.html
 https://security.stackexchange.com/questions/176624/how-do-i-check-if-kpti-is-enabled-on-linux
+https://jinb-park.blogspot.com/2019/06/deep-dive-into-page-table-isolation.html
 https://www.infradead.org/~mchehab/rst_conversion/x86/pti.html
 https://www.usenix.org/system/files/login/articles/login_winter18_03_gruss.pdf
 flush+reload

@@ -1,4 +1,5 @@
 https://www.kernel.org/doc/html/latest/x86/pti.html
+https://github.com/torvalds/linux/blob/bfeffd155283772bbe78c6a05dec7c0128ee500c/arch/x86/entry/calling.h#L223
 https://www.kernel.org/doc/Documentation/x86/pti.txt
 https://security.stackexchange.com/questions/176624/how-do-i-check-if-kpti-is-enabled-on-linux
 https://jinb-park.blogspot.com/2019/06/deep-dive-into-page-table-isolation.html

@@ -8,6 +8,7 @@ https://www.usenix.org/system/files/login/articles/login_winter18_03_gruss.pdf
 flush+reload
   https://www.youtube.com/watch?v=UmLB1EWelCw
   https://eprint.iacr.org/2013/448.pdf
+https://lore.kernel.org/patchwork/patch/846310/
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 key!
 https://googleprojectzero.blogspot.com/2018/09/a-cache-invalidation-bug-in-linux.html

@@ -80,9 +80,9 @@ idt_init(void) {
 	       "[**] dpl:\t%d\n"
 	       "[**] p:\t\t%d\n"
 	       "[*]  end dump\n\n",
-	       ZD_INT, (void *)zd_handler, zd_idte->segment_selector, 
-	       zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
-	if(!zd_idte->p) {
+	       ZD_INT, (void *)zd_handler, (idte+ZD_INT)->segment_selector, (idte+ZD_INT)->ist,
+	       (idte+ZD_INT)->type, (idte+ZD_INT)->dpl, (idte+ZD_INT)->p);
+	if(!(idte+ZD_INT)->p) {
 		printk("[*] fatal: handler segment not present\n");
 		return ENOSYS; }
 		

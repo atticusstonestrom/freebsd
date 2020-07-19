@@ -36,14 +36,48 @@ __asm__(
 	".text;"
 	".global asm_hook;"
 "asm_hook:;"
+	
+	
+	"push %rax;"		//struct tss_t *tss
+	"push %rbx;"		//struct tssd_t *tssd
+	"push %rdx;"		//placeholder
+	"sub $12, %rsp;"
+	"sgdt (%rsp);"
+	"str 10(%rsp);"
+	"movzwl 10(%rsp), %ebx;"
+	"addq 2(%rsp), %rbx;"
+	"movzwl 2(%rbx), %eax;"
+	"movzbl 4(%rbx), %edx;"
+	"shl $16, %rdx;"
+	"or %rdx, %rax;"
+	"movzbl 7(%rbx), %edx;"
+	"shl $24, %rdx;"
+	"or %rdx, %rax;"
+	"mov 8(%rbx), %edx;"
+	"shl $32, %rdx;"
+	"or %rdx, %rax;"
+	
+	"add $12, %rsp;"
+	"pop %rdx;"
+	"lea 16(%rsp), %rbx;"	//original rsp
+	
+	"mov 12(%rax), %rsp;"	//lock sub 12, (%rax)?
+	/*"push 32(%rbx);"	//ss
+	"push 24(%rbx);"	//rsp
+	"push 16(%rbx);"	//rflags
+	"push 8(%rbx);"		//cs
+	"push (%rbx);"		//rip*/
+	"push %rbx;"		//old rsp
+	"mov -8(%rbx), %rax;"
+	"mov -16(%rbx), %rbx;"
+	
 	PUSHA
-	"call get_tss;"
-	"push %rsp;"
-	"12(%rax)
 	"swapgs;"
 	"call hook;"
 	"swapgs;"
 	POPA
+	
+	"mov (%rsp), %rsp;"
 	"movq (bp_handler), %rax;"
 	"ret;");
 extern void asm_hook(void);

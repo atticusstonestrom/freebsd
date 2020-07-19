@@ -22,7 +22,8 @@ MODULE_VERSION("0.01");
 struct idte_t *idte;			//points to the start of the IDT
 unsigned long zd_handler;		//contains absolute address of division error IRQ handler
 unsigned long bp_handler;		//contains absolute address of soft breakpoint IRQ handler
-#define STUB_SIZE 0x2b			//includes extra 8 bytes for the old value of cr3
+//#define STUB_SIZE 0x2b			//includes extra 8 bytes for the old value of cr3
+#define STUB_SIZE 0x2b
 unsigned char orig_bytes[STUB_SIZE];	//contains the original bytes of the division error IRQ handler
 struct idtr_t idtr;			//holds base address and limit value of the IDT
 
@@ -82,7 +83,7 @@ __asm__(
 	"ret;");
 extern void asm_hook(void);
 
-__asm__(
+/*__asm__(
 	".text;"
 	".global stub;"
 "stub:;"
@@ -101,7 +102,26 @@ __asm__(
 	"ret;"
 ".CR3:;"
 	//will be filled with a valid value of cr3 during module initialization
-	".quad 0xdeadbeefdeadbeef;");
+	".quad 0xdeadbeefdeadbeef;");*/
+__asm__(
+	".text;"
+	".global stub;"
+"stub:;"
+	"push %rax;"	//bp_handler	
+	"push %rbx;"	//new cr3, &asm_hook
+	"push %rdx;"	//old cr3
+	"mov %cr3, %rdx;"
+	"mov %rdx, %rbx;"
+	"bts $0x3f, %rbx;"
+	"and $0xffffffffffffe7ff, %rbx;"
+	"mov %rbx, %cr3;"
+	"mov $asm_hook, %rbx;"
+	"call *%rbx;"
+	"mov %rdx, %cr3;"
+	"pop %rdx;"
+	"pop %rbx;"
+	"xchg %rax, (%rsp);"
+	"ret;");
 extern void stub(void);
 
 static int __init
@@ -139,15 +159,15 @@ idt_init(void) {
 	printk("[*] bp handler:\t0x%lx\n\n", bp_handler);
 
 
-	unsigned long cr3;
+	/*unsigned long cr3;
 	__asm__ __volatile__("mov %%cr3, %0":"=r"(cr3)::"memory");
-	printk("[*] cr3:\t0x%lx\n\n", cr3);
+	printk("[*] cr3:\t0x%lx\n\n", cr3);*/
 
 	memcpy(orig_bytes, (void *)zd_handler, STUB_SIZE);
 	DISABLE_RW_PROTECTION
 	__asm__ __volatile__("cli":::"memory");
 	memcpy((void *)zd_handler, &stub, STUB_SIZE);
-	*(unsigned long *)(zd_handler+STUB_SIZE-8)=cr3;
+	//*(unsigned long *)(zd_handler+STUB_SIZE-8)=cr3;
 	__asm__ __volatile__("sti":::"memory");
 	ENABLE_RW_PROTECTION
 

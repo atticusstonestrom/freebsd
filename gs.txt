@@ -7,6 +7,7 @@ where is the kernel stack stored linux
 per_cpu_var(kernel_stack)
 per_cpu_var(cpu_tss+TSS_sp0)
 linux kernel gs:600c, gs:0x6014
+https://stackoverflow.com/questions/39578898/what-does-the-declaration-extern-struct-cpu-cpu-asmgs0-mean?noredirect=1&lq=1
 https://www.kernel.org/doc/Documentation/x86/kernel-stacks
 https://www.felixcloutier.com/x86/swapgs
 

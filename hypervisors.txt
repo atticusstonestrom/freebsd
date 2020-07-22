@@ -11,3 +11,4 @@ https://www.linux-kvm.org/page/Memory
 
 https://security.stackexchange.com/questions/54949/enabling-virutalization-addressing-the-bluepill-risk
 vulnerabilities in vt-x
+system management mode, https://en.wikipedia.org/wiki/NSA_ANT_catalog

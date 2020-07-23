@@ -60,6 +60,10 @@ https://stackoverflow.com/questions/3748384/what-is-tlb-shootdown
 serializing instruction, multiple-processor management, chapter 8 volume 3a
 https://stackoverflow.com/questions/62068750/kinds-of-ipi-for-x86-architecture-in-linux
 https://stackoverflow.com/questions/40083533/what-is-the-effect-of-startup-ipi-on-application-processor
+
+
+3051, "affinity"
+vol 3a.8
 ______________________________________________
 lfence
 https://stackoverflow.com/questions/20316124/does-it-make-any-sense-to-use-the-lfence-instruction-on-x86-x86-64-processors

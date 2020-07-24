@@ -1,6 +1,7 @@
 vol 3a.8
 
 https://stackoverflow.com/questions/980999/what-does-multicore-assembly-language-look-like
+  most relevant for bootkit
 https://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-in-x86-assembly/56803909
 Rootkits
 file:///Users/atticusstonestrom/Desktop/math/elliptic%20curves/hc/books/systems/51534-developing-multithreaded-applications.pdf

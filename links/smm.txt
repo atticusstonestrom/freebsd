@@ -3,3 +3,5 @@ vol 3c.34, 4165 (217)
 https://wiki.osdev.org/ACPI
 https://forum.osdev.org/viewtopic.php?t=16990
 https://wiki.osdev.org/System_Management_Mode
+https://en.wikipedia.org/wiki/System_Management_Mode#Problems
+  and references

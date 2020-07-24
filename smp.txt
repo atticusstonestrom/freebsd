@@ -1,0 +1,33 @@
+vol 3a.8
+
+https://stackoverflow.com/questions/980999/what-does-multicore-assembly-language-look-like
+https://stackoverflow.com/questions/8891067/what-does-the-lock-instruction-mean-in-x86-assembly/56803909
+Rootkits
+file:///Users/atticusstonestrom/Desktop/math/elliptic%20curves/hc/books/systems/51534-developing-multithreaded-applications.pdf
+https://stackoverflow.com/questions/3339141/x86-lock-question-on-multi-core-cpus/3339380#3339380
+http://davidad.github.io/blog/2014/03/23/concurrency-primitives-in-intel-64-assembly/
+http://www0.cs.ucl.ac.uk/staff/B.Karp/3007/s2018/lectures/3007-lecture17-threads-x86-64.pdf
+https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell-which-core-the-instruction-is-being-run-on/56622112https://stackoverflow.com/questions/12894078/what-is-the-purpose-of-the-pause-instruction-in-x86
+vol 3a.4-49. 2935
+inter-processor interrupt: vol 3a.10-18. 3176
+https://stackoverflow.com/questions/3748384/what-is-tlb-shootdown
+serializing instruction, multiple-processor management, chapter 8 volume 3a
+https://stackoverflow.com/questions/62068750/kinds-of-ipi-for-x86-architecture-in-linux
+https://stackoverflow.com/questions/40083533/what-is-the-effect-of-startup-ipi-on-application-processor
+
+https://community.intel.com/t5/Intel-oneAPI-HPC-Toolkit/What-is-hyperthreading-Is-it-related-to-SMP/td-p/929921
+http://kos.enix.org/pub/how_to_bring_smp.html
+
+
+"affinity"
+  https://stackoverflow.com/questions/19587323/what-does-thread-affinity-mean
+  https://www.linuxjournal.com/article/6799
+  https://elixir.bootlin.com/linux/latest/source/kernel/smp.c#L406
+  https://en.wikipedia.org/wiki/Processor_affinity
+  http://www.how-hard-can-it.be/cpu-affinity-introduction/
+  https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread
+  what is thread affinity
+  pg 3051
+os:
+  how does the scheduler set which processor is active
+  on_each_cpu

@@ -16,3 +16,7 @@ https://stackoverflow.com/questions/33841890/disabling-paging-in-x86-32bit
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 key!
 https://googleprojectzero.blogspot.com/2018/09/a-cache-invalidation-bug-in-linux.html
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+https://lore.kernel.org/lkml/CAHk-=wgXf_wQ9zrJKv2Hy4EpEbLuqty-Cjbs2u00gm7XcYHBfw@mail.gmail.com/
+https://software.intel.com/security-software-guidance/insights/deep-dive-snoop-assisted-l1-data-sampling
+https://www.zdnet.com/article/linus-torvalds-rejects-stupid-aws-made-linux-patch-for-intel-cpu-snoop-attack/

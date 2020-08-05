@@ -1,4 +1,4 @@
-sudo rm -rf vtx-test.kext
+sudo rm -rf /tmp/vtx-test.kext
 sudo cp -R /Users/atticusstonestrom/Library/Developer/Xcode/DerivedData/vtx-test-avirkliantwucufwtoryfepsifiw/Build/Products/Debug/vtx-test.kext /tmp
 sudo kextload /tmp/vtx-test.kext
 sudo kextutil /tmp/vtx-test.kext

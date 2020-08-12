@@ -30,6 +30,8 @@ MODULE_VERSION("0.01");
 //msr 0x830
 //https://stackoverflow.com/questions/62068750/kinds-of-ipi-for-x86-architecture-in-linux
 //https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell-which-core-the-instruction-is-being-run-on
+//	https://stackoverflow.com/questions/6146059/how-can-i-detect-the-number-of-cores-in-x86-assembly
+//	https://wiki.osdev.org/Detecting_CPU_Topology_(80x86)
 static void per_cpu_print(void *info) {
 	cpuid_t cpuid;
 	unsigned int ia32_tsc_aux;

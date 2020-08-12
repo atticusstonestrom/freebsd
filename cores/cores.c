@@ -6,153 +6,50 @@
 
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/device.h>
 #include <linux/kernel.h>
-#include <asm/io.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/string.h>
+
+static int param_cpu_id;
+module_param(param_cpu_id, int, (S_IRUSR|S_IRGRP|S_IROTH));
+MODULE_PARM_DESC(param_cpu_id, "cpu id that operations run on");
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Atticus Stonestrom");
-MODULE_DESCRIPTION("Hooks the zero divisor IDT entry");
+MODULE_DESCRIPTION("...");
 MODULE_VERSION("0.01");
 
-
-struct idte_t {
-	unsigned short offset_0_15;
-	unsigned short segment_selector;
-	unsigned char ist;			//interrupt stack table
-	unsigned char type:4;
-	unsigned char zero_12:1;
-	unsigned char dpl:2;			//descriptor privilege level
-	unsigned char p:1;			//present flag
-	unsigned short offset_16_31;
-	unsigned int offset_32_63;
-	unsigned int rsv; }
-	__attribute__((packed))
-	*zd_idte;
-
-#define ZD_INT 0x00
-unsigned long idte_offset;			//contains absolute address of original interrupt handler
-struct idtr_t {
-	unsigned short lim_val;
-	struct idte_t *addr; }
-	__attribute__((packed))
-	idtr;
-
-int counter=0;
-/*__attribute__((__used__))
-static void
-hook(void) {
-	printk("in the hook! counter %d\n", ++counter);
-	return; }*/
-
-__asm__(
-	".text;"
-	".global asm_hook;"
-"asm_hook:;"
-	/*"push %rax;"
-	"push %rbx;"
-	"push %rcx;"
-	"push %rdx;"
-	"push %rbp;"
-	"push %rsi;
-	"push %rdi;"
-	"push %fs;"
-	"push %gs;"
-	"pushf;"
-	"call hook;"
-	"popf;"
-	"pop %gs;"
-	"pop %fs;"
-	"pop %rdi;"
-	"pop %rsi;"
-	"pop %rbp;"
-	"pop %rdx;"
-	"pop %rcx;"
-	"pop %rbx;"
-	"pop %rax;"*/
-	"incl counter;"
-	"jmp *(idte_offset);");
-extern void asm_hook(void);
+/////////////////////////////////////////
 
 
-static int __init
-idt_init(void) {
-	__asm__ __volatile__ (
-		"cli;"
-		"sidt %0;"
-		"sti;"
-		:: "m"(idtr));
-	printk("[*]  idtr dump\n"
-	       "[**] address:\t%px\n"
-	       "[**] lim val:\t0x%x\n"
-	       "[*]  end dump\n\n",
-	       idtr.addr, idtr.lim_val);
-	zd_idte=(idtr.addr)+ZD_INT;
+//CALL_FUNCTION_VECTOR, pg 170
+//will cli disable preemption?
+//	https://stackoverflow.com/questions/53919482/whats-the-process-of-disabling-interrupt-in-multi-processor-system
+//msr 0x830
+//https://stackoverflow.com/questions/62068750/kinds-of-ipi-for-x86-architecture-in-linux
+//https://stackoverflow.com/questions/22310028/is-there-an-x86-instruction-to-tell-which-core-the-instruction-is-being-run-on
+static void per_cpu_print(void *info) {
+	cpuid_t cpuid;
+	unsigned int ia32_tsc_aux;
+	__asm__ __volatile__("rdtscp":"=c"(ia32_tsc_aux));
+	CPUID(cpuid, 0x0b);
+	printk("linux id: %d\t\tapic id: %d\t\ttsc_aux: %d\n", smp_processor_id(), cpuid.edx, ia32_tsc_aux); }
 
-	idte_offset=0
-		| ((long)(zd_idte->offset_0_15))
-		| ((long)(zd_idte->offset_16_31)<<16)
-		| ((long)(zd_idte->offset_32_63)<<32);
-	printk("[*]  old idt entry %d:\n"
-	       "[**] addr:\t%px\n"
-	       "[**] segment:\t0x%x\n"
-	       "[**] ist:\t%d\n"
-	       "[**] type:\t%d\n"
-	       "[**] dpl:\t%d\n"
-	       "[**] p:\t\t%d\n"
-	       "[*]  end dump\n\n",
-	       ZD_INT, (void *)idte_offset, zd_idte->segment_selector, 
-	       zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
-	if(!zd_idte->p) {
-		printk("[*] fatal: handler segment not present\n");
-		return ENOSYS; }
-
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
-	zd_idte->offset_0_15=((unsigned long)(&asm_hook))&0xffff;
-	zd_idte->offset_16_31=((unsigned long)(&asm_hook)>>16)&0xffff;
-	zd_idte->offset_32_63=((unsigned long)(&asm_hook)>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	printk("[*]  new idt entry %d:\n"
-	       "[**] addr:\t%px\n"
-	       "[**] segment:\t0x%x\n"
-	       "[**] ist:\t%d\n"
-	       "[**] type:\t%d\n"
-	       "[**] dpl:\t%d\n"
-	       "[**] p:\t\t%d\n"
-	       "[*]  end dump\n\n",
-	       ZD_INT, (void *)(\
-	       (long)zd_idte->offset_0_15|((long)zd_idte->offset_16_31<<16)|((long)zd_idte->offset_32_63<<32)),
-	       zd_idte->segment_selector, zd_idte->ist, zd_idte->type, zd_idte->dpl, zd_idte->p);
-	
-	//uprintf("%p\n", &asm_hook);
-	/*unsigned short cs;
-	__asm__ __volatile__("mov %%cs, %0" : "=r"(cs));
-	uprintf("cs: 0x%x\n", cs);
-	for(int i=0; i<64; i++) {
-		uprintf("idt entry %d:\t%p\n", i,
-			(void *)((long)idtr.addr[i].offset_0_15|((long)idtr.addr[i].offset_16_31<<16)|((long)idtr.addr[i].offset_32_63<<32))); }*/
-
+static int __init hvc_init(void) {
+	on_each_cpu(per_cpu_print, NULL, 1);
+	int cpu_id;
+	if(param_cpu_id!=0) {
+		printk("[*] unable to load module without cpu parameter 0\n");
+		return -EINVAL; }
+	cpu_id=get_cpu();
+	printk("[*]  called on cpu: %d\n\n", cpu_id);
+	put_cpu();
 	return 0; }
 
-static void __exit
-idt_fini(void) {
-	printk("[*] counter: %d\n\n", counter);
-	unsigned long cr0;
-	__asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-	cr0 &= ~(long)0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0));
-	__asm__ __volatile__("cli");
-	zd_idte->offset_0_15=idte_offset&0xffff;
-	zd_idte->offset_16_31=(idte_offset>>16)&0xffff;
-	zd_idte->offset_32_63=(idte_offset>>32)&0xffffffff;
-	__asm__ __volatile__("sti");
-	cr0 |= 0x10000;
-	__asm__ __volatile__("mov %0, %%cr0" :: "r"(cr0)); }
+static void __exit hvc_exit(void) {
+	printk("[*] unloading\n"); }
 
-module_init(idt_init);
-module_exit(idt_fini);
+module_init(hvc_init);
+module_exit(hvc_exit);

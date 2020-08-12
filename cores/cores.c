@@ -40,6 +40,7 @@ static void per_cpu_print(void *info) {
 	printk("linux id: %d\t\tapic id: %d\t\ttsc_aux: %d\n", smp_processor_id(), cpuid.edx, ia32_tsc_aux); }
 
 static int __init hvc_init(void) {
+	printk("num_online_cpus: %d\n", num_online_cpus());
 	on_each_cpu(per_cpu_print, NULL, 1);
 	int cpu_id;
 	if(param_cpu_id!=0) {

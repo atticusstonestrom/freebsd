@@ -1,5 +1,6 @@
 gdb -batch -ex 'file ./sc' -ex 'disassemble shellcode' > sc.txt
-VBoxManage startvm freebsd -E VBOX_GUI_DBG_AUTO_SHOW=true -E VBOX_GUI_DBG_ENABLED=true
+VBoxManage startvm learning.c -E VBOX_GUI_DBG_AUTO_SHOW=true -E VBOX_GUI_DBG_ENABLED=true
+VBoxManage setextradata global "GUI/SplitterSizes"
 https://www.virtualbox.org/manual/ch12.html#ts_debugger
 
 https://gist.github.com/zg/38a3afa112ddf7de4912aafc249ec82f

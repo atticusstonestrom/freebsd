@@ -1,0 +1,5 @@
+https://hackaday.com/2015/07/20/designing-a-cpu-in-vhdl-for-fpgas-omg/
+https://www.darkreading.com/edge/theedge/meet-fpga-the-tiny-powerful-hackable-bit-of-silicon-at-the-heart-of-iot/b/d-id/1335730
+https://electronics.stackexchange.com/questions/132611/whats-the-motivation-in-using-verilog-or-vhdl-over-c#:~:text=C%20is%20a%20software%20programming,%2C%20machine%20language)%20when%20compiled.&text=This%20would%20be%20synthesized%20to%20an%20(hardware)%20adder.
+do hardware description languages compile to assembly
+https://blog.esciencecenter.nl/why-use-an-fpga-instead-of-a-cpu-or-gpu-b234cd4f309c

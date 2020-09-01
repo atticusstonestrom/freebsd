@@ -5,3 +5,10 @@ trace_printk
 https://superuser.com/questions/1364105/how-is-the-operating-system-able-to-know-the-battery-level
 https://www.csoonline.com/article/3220476/researchers-say-now-you-too-can-disable-intel-me-backdoor-thanks-to-the-nsa.html
 https://reverseengineering.stackexchange.com/questions/2172/why-are-got-and-plt-still-present-in-linux-static-stripped-binaries?rq=1
+
+https://www.agner.org/optimize/
+https://lwn.net/Articles/250967/
+arm virtualization
+https://genode.org/documentation/articles/arm_virtualization
+https://en.wikipedia.org/wiki/CuBox
+https://en.wikipedia.org/wiki/Embedded_hypervisor

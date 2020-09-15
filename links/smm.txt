@@ -5,3 +5,7 @@ https://forum.osdev.org/viewtopic.php?t=16990
 https://wiki.osdev.org/System_Management_Mode
 https://en.wikipedia.org/wiki/System_Management_Mode#Problems
   and references
+
+system management mode site:stackoverflow.com
+https://stackoverflow.com/questions/40583848/differences-among-various-interrupts-sci-smi-nmi-and-normal-interrupt
+https://stackoverflow.com/questions/50790715/is-there-a-way-to-determine-that-smm-interrupt-has-occured
